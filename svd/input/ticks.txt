@@ -1,0 +1,4 @@
+0	XOM
+1	WMT
+2	PG
+3	MSFT

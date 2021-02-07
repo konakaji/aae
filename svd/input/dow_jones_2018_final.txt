@@ -1,0 +1,30 @@
+Verizon,VZ
+IBM,IBM
+ExxonMobil,XOM
+Chevron,CVX
+Procter & Gamble,PG
+Coca-Cola,KO
+Pfizer,PFE
+JPMorgan Chase,JPM
+Cisco Systems,CSCO
+McDonald's,MCD
+Merck & Company,MRK
+3M,MMM
+Johnson & Johnson,JNJ
+Intel,INTC
+DowDuPont,DWDP
+Travelers,TRV
+Caterpillar,CAT
+General Electric Company ,GE
+United Technologies,UTX
+Walmart,WMT
+The Home Depot,HD
+Boeing,BA
+Microsoft,MSFT
+American Express,AXP
+Goldman Sachs,GS
+Walt Disney,DIS
+UnitedHealth Group,UNH
+Apple,AAPL
+Nike,NKE
+Visa,V
