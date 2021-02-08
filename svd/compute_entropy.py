@@ -87,4 +87,5 @@ if __name__ == '__main__':
     parser.add_argument("--prefixes", help='list of prefixes of the model and the energy files', nargs='*',
                         default=const.DEFAULT_ENTROPY_PREFIXES)
     args = parser.parse_args()
+    print(args)
     compute(args)

@@ -2,34 +2,23 @@ from svd.learn_svd import pickup
 from svd.finance.context import Context
 from svd.core.sampler import ParametrizedQiskitSamplerFactory, SVDQiskitSamplerFactory
 from svd.core.util import ImageGenrator
-from svd.core.circuit import AllHadamardCircuit
-import qiskit
+from svd.core.circuit import AllHadamardCircuit, HadamardAndMeausre
+import svd.constant as const
 
 
-class HadamardAndMeausre(qiskit.QuantumCircuit):
-    def __init__(self, target):
-        self.target = target
-
-    def merge(self, circuit: qiskit.QuantumCircuit, q_register: qiskit.QuantumRegister):
-        circuit.h(self.target)
-        circuit.measure([self.target], [self.target])
-        circuit.barrier()
-        return circuit, q_register
-
-
-def plot(start, hadamard):
+def plot(start, hadamard, prefix):
     context = Context()
     usecase = context.get_coefficient_usecase()
     coefficient = usecase.load(5, start, sub=4)
     probability = coefficient.to_probability()
-    model = pickup(start, "5")[1]
-    data_factory = ParametrizedQiskitSamplerFactory(6, 5)
-    data_sampler = data_factory.load("output/" + model)
+    min, model, layer_count = pickup(start, prefix)
+    data_factory = ParametrizedQiskitSamplerFactory(layer_count, 5)
+    data_sampler = data_factory.load("{}/{}".format(const.DATE_PATH, model))
     if hadamard:
         data_sampler.circuit.additional_circuit = AllHadamardCircuit(5)
         probability = coefficient.to_hadamard_probability()
         start = start * 100
-    generator = ImageGenrator("./quality", probability)
+    generator = ImageGenrator(const.FINAL_FIGURE_PATH, probability)
     titles = find_titles(hadamard)
     generator.probability_title = titles[0]
     generator.state_title = titles[1]
@@ -37,8 +26,8 @@ def plot(start, hadamard):
     generator.generate(start, data_sampler)
 
 
-def plot_mmd(start):
-    model = pickup(start, "5")[1]
+def plot_mmd(start, prefix):
+    min, model, layer_count = pickup(start, prefix)[1]
     import matplotlib.pyplot as p
     p.clf()
     with open("output/{}".format(model.replace("model", "energy"))) as f:
@@ -120,9 +109,9 @@ def plot_svd_circuit():
 
 
 if __name__ == '__main__':
-    for start in range(99, 107):
+    for start in range(0, 8):
         for hadamard in [False, True]:
-            plot(start, hadamard)
-        plot_mmd(start)
+            plot(start, hadamard, "default")
+        plot_mmd(start, "default")
     plot_data_circuit()
     plot_svd_circuit()

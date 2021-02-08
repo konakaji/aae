@@ -43,5 +43,5 @@ if __name__ == '__main__':
             label = prefix
         plot(prefix, label, markers[i % len(markers)])
     pyplot.legend(fontsize=16)
-    pyplot.savefig("figure/fig_svd_entropy.eps")
-    pyplot.savefig("figure/fig_svd_entropy.png")
+    pyplot.savefig(const.ENTROPY_FIGURE)
+    pyplot.savefig(const.ENTROPY_FIGURE_EPS)

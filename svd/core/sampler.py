@@ -238,6 +238,8 @@ class SVDQiskitSamplerFactory(ParametrizedQiskitSamplerFactory):
             directions = c["directions"]
             parameters = c["parameters"]
             n_a = c["n-a"]
+            if "layer_count" in c["extra"]:
+                self.layer_count = int(c["extra"]["layer_count"])
             circuit = TENCircuitFactory.do_generate(parameters, directions, self.n_qubit, n_a, n_a)
             return self._create_instance(circuit)
 
