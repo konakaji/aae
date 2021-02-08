@@ -1,33 +1,27 @@
 from svd.finance.context import Context
+from svd.util import date_format
+import svd.constant as const
 
 if __name__ == '__main__':
     c = Context()
     usecase = c.get_coefficient_usecase()
     repository = c.get_history_repository()
-    ticks = usecase.get_ticks()[0]
-    ticks = ticks[0:4]
-    start = 99
-    end = 111
+    ticks = const.DEFAULT_STOCKS
+    start = 0
+    end = 12
     dates = []
-    with open("input/dates.txt") as f:
+    with open(const.DATE_PATH) as f:
         for l in f.readlines():
             id, date = l.rstrip().split("\t")
-            date = date.split(",")[0]
+            date = date_format(date)
             if start <= int(id) < end:
                 dates.append(date)
-    with open("output/prices", "w") as f:
+    with open(const.PRICE_PATH, "w") as f:
         result = {}
         f.write("\t{}\n".format("\t".join(dates)))
-        for id, tick in enumerate(ticks):
+        for tick in ticks:
             histories = repository.find_history_by_tick(tick)[start: end]
             prices = []
-            result[id] = {}
             for h in histories:
-                prices.append(str(h.close_price))
+                prices.append(str(h.open_price))
             f.write("{}\t{}\n".format(tick, "\t".join(prices)))
-            usecase.fill(result, id, 4, histories)
-        for id, tick in enumerate(ticks):
-            cs = []
-            for k, v in result[id].items():
-                cs.append(str(v))
-            f.write("{}\t{}\n".format(tick, "\t".join(cs)))

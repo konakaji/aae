@@ -1,6 +1,7 @@
 from svd.finance.context import Context
+import svd.constant as const
 
 if __name__ == '__main__':
     c = Context()
     usecase = c.get_coefficient_usecase()
-    usecase.build(["XOM", "WMT", "PG", "MSFT"], 5, 1)
+    usecase.build(const.DEFAULT_STOCKS, 5, 1)

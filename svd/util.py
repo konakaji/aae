@@ -21,3 +21,8 @@ def pickup(index, prefix):
                     layer = l
                     current = filename
     return min, current, layer
+
+def date_format(date_str):
+    day_month, year = date_str.split(",")
+    month, day = day_month.split(" ")
+    return "{} {}".format(month, year[3:5])

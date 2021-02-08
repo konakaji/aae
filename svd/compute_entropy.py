@@ -10,7 +10,7 @@ from svd.core.sampler import SVDQiskitSamplerFactory, ParametrizedQiskitSamplerF
 from svd.core.encoder import Encoder
 from svd.core.circuit import HadamardAndMeausre
 from svd.finance.context import Context
-from svd.util import pickup
+from svd.util import pickup, date_format
 import svd.constant as const
 
 
@@ -52,6 +52,7 @@ def compute_quantum(index, prefix):
     if not prefix == const.NAIVE_PREFIX:
         data_circuit.additional_circuit = HadamardAndMeausre(0)
     c_factory = SVDQiskitSamplerFactory(8, data_circuit)
+    print(index, filename)
     sampler = c_factory.load("{}/{}".format(const.SVD_MODEL_PATH, filename))
     if not prefix == const.NAIVE_PREFIX:
         sampler.post_select = {0: 1}
@@ -67,12 +68,12 @@ def compute_quantum(index, prefix):
 def compute(args):
     dates = []
     date_map = build_date_map()
-    for i in range(args.ds, args.de):
-        dates.append(date_map[i + 4])
+    for i in range(args.ds, args.de + 1):
+        dates.append(date_format(date_map[i + 4]))
     for prefix in args.prefixes:
         classical = (prefix == const.CLASSICAL_PREFIX)
         with open("{}/{}.txt".format(const.ENTROPY_PATH, prefix), "w") as f:
-            for i in range(args.ds, args.de):
+            for i in range(args.ds, args.de + 1):
                 if classical:
                     f.write("{}\t{}\n".format(dates[i], compute_classical(i)))
                 else:

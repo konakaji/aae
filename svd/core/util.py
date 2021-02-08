@@ -61,7 +61,7 @@ def print_state_tex(values, n_qubit):
             result = result + "+"
         elif v < 0:
             result = result + "-"
-        result = result + "{:.2f}|{}\\rangle".format(abs(v), str)
+        result = result + "{:.2f}|{}>".format(abs(v), str)
     return result
 
 

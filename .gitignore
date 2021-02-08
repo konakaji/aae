@@ -151,11 +151,11 @@ crashlytics-build.properties
 fabric.properties
 
 svd/figure/*
+svd/output/coefficients/*
 svd/output/figure/*
 svd/output/data_model/*
 svd/output/svd_model/*
 svd/output/energy/*
 svd/output/figure/*
 svd/output/figure_second/*
-svd/output/entropy/*
 ibmq/.ibmq_key

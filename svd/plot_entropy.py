@@ -20,7 +20,7 @@ def plot(prefix, label, marker):
 
 
 if __name__ == '__main__':
-    markers = ["s", "x", "-", "o"]
+    markers = ["s", "x", "o", "D"]
     label_map = {const.CLASSICAL_PREFIX: "exact", const.NAIVE_PREFIX: "naive",
                  const.DEFAULT_PREFIX: "our algorithm"}
     parser = ArgumentParser()
@@ -34,7 +34,7 @@ if __name__ == '__main__':
     pyplot.title('Transition of the SVD Entropy', fontsize=18)
     pyplot.xlabel("date", fontsize=20)
     pyplot.ylabel("the SVD Entropy", fontsize=20)
-    pyplot.ylim([0.2, 1.4])
+    pyplot.ylim([0.3, 1.3])
     pyplot.grid(which='major', color='black', linestyle='-')
     for i, prefix in enumerate(args.prefixes):
         if prefix in label_map:

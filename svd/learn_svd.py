@@ -16,17 +16,24 @@ from argparse import ArgumentParser
 
 def do_learn(args, date_index):
     min, filename, data_layer = pickup(date_index, args.prefix)
-    s_factory = ParametrizedQiskitSamplerFactory(data_layer, const.DATA_QUBITS)
+    data_qubit = const.DATA_QUBITS
+    if args.prefix == const.NAIVE_PREFIX:
+        data_qubit = const.DATA_QUBITS - 1
+    s_factory = ParametrizedQiskitSamplerFactory(data_layer, data_qubit)
     data_sampler = s_factory.load(const.MODEL_PATH + "/" + filename)
-    data_sampler.circuit.additional_circuit = HadamardAndMeausre(0)  # do Hadamard transform and measure 0-th qubit
+    if not args.prefix == const.NAIVE_PREFIX:
+        data_sampler.circuit.additional_circuit = HadamardAndMeausre(0)  # do Hadamard transform and measure 0-th qubit
     factory = SVDQiskitSamplerFactory(args.layer, data_sampler.circuit)
     sampler = factory.generate_ten(const.SVD_LOCAL_QUBITS, const.SVD_LOCAL_QUBITS)
-    sampler.post_select = {0: 1}  # 0-th qubit must be 1
+    if not args.prefix == const.NAIVE_PREFIX:
+        data_sampler.circuit.additional_circuit = HadamardAndMeausre(0)  # do Hadamard transform and measure 0-th qubit
+        sampler.post_select = {0 : 1}
     optimizer = AdamOptimizer(scheduler=UnitLRScheduler(args.lr), maxiter=args.iter)
     cost = SVDExactCost(const.SVD_LOCAL_QUBITS, const.SVD_LOCAL_QUBITS, Encoder(const.SVD_QUBITS))
     task = AdamOptimizationTask(sampler, cost, optimizer)
     task.optimize()
-    factory.save("{}/{}".format(const.SVD_MODEL_PATH, filename), sampler, extra={"cost": cost.value(sampler)})
+    factory.save("{}/{}".format(const.SVD_MODEL_PATH, filename), sampler,
+                 extra={"cost": cost.value(sampler), "layer_count": args.layer})
 
 
 def learn(args):
