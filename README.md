@@ -13,6 +13,12 @@ qiskit-ibmq-provider==0.11.1
 qiskit-ignis==0.5.1
 qiskit-terra==0.16.3
 ```
+# Code Readingについて
+- 多数のクラスで構成されるパッケージのため、Pycharm等の統合開発環境を使うのが良いかもしれません。
+- 実機まわりのコードは、下記が主な部分です。
+  - Projectのルート/ibmq/base.py
+  - Projectのルート/svd/core/sampler.py 中のQiskitSamplerのdo_sample
+  - Projectのルート/svd/learn_sampler.py 中のdo_learn
 
 # 導入方法
 ## ライブラリのインストール
@@ -30,7 +36,7 @@ ceaf7e4xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # 実行方法
 ## データ
-Dow Jones Industrial Averageに含まれる銘柄の中で、2008年末の時価総額トップ4(https://toyokeizai.net/articles/-/2713)を利用します。
+Dow Jones Industrial Averageに含まれる銘柄の中で、2008年末の時価総額トップ４(https://toyokeizai.net/articles/-/2713)を利用します。
 - XOM (Exxonmobil)
 - WMT (Walmart)
 - PG (P&G)
@@ -157,6 +163,5 @@ python compute_entropy.py --prefixes default tronto classical
 ```
 ここで、classicalを指定すると、古典計算も実行します。
 
-# 結果
+## 結果
 - output/entropy/(prefix).txt の形で保存します。
-
