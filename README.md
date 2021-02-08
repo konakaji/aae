@@ -66,6 +66,4 @@ optional arguments:
 ```
 python learn_sampler.py -d ibmq_tronto -r True --prefix tronto
 ```
-とする。prefixのオプションは、実験セッティングのラベルに
-  -lr LR                learning rate
-  -lr LR                learning ra
+とする。--prefixは、実験セッティングを区別するラベルに対応するので、わかりやすい名前をつけるのが推奨される(何も指定しなければ、"default"になる)。なお、-d, -rを指定しなければ、単にqasm_simulatorで実行される。-dsと-deはスクリプト
