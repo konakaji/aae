@@ -36,7 +36,7 @@ ceaf7e4xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # 実行方法
 ## データ
-Dow Jones Industrial Averageに含まれる銘柄の中で、2008年末の時価総額トップ４(https://toyokeizai.net/articles/-/2713)を利用します。
+Dow Jones Industrial Averageに含まれる銘柄の中で、2008年末の時価総額トップ４(https://toyokeizai.net/articles/-/2713) を利用します。
 - XOM (Exxonmobil)
 - WMT (Walmart)
 - PG (P&G)
