@@ -99,8 +99,10 @@ def do_learn(args, output, energy_output, coefficient, naive=False):
     data_sampler = factory.generate_real_he()
     data_sampler.encoder = encoder
     if args.device is not None:
-        from ibmq.base import get_backend
-        data_sampler.simulator = get_backend(args.device, reservation=args.reservation)
+        from ibmq.base import get_backend, DeviceFactory
+        device_factory = DeviceFactory(args.device, reservation=args.reservation)
+        data_sampler.simulator = device_factory.get_backend()
+        data_sampler.factory = device_factory
     scheduler = TransformingLRScheduler(lr=args.lr)
     scheduler.schedule(100, 0.01)
     optimizer = AdamOptimizer(scheduler, maxiter=args.iter)

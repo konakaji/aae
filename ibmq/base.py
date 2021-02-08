@@ -26,3 +26,14 @@ def get_backend(name, reservation=False):
     p = prepare(reservation)
     print(p.backends())
     return p.get_backend(name)
+
+
+class DeviceFactory:
+    def __init__(self, name, reservation):
+        self.name = name
+        self.reservation = reservation
+
+    def get_backend(self):
+        p = prepare(reservation=self.reservation)
+        print(p.backends())
+        return p.get_backend(name=self.name)
