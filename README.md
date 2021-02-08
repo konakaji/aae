@@ -102,7 +102,7 @@ python learn_sampler.py -ds 1 -de 3
 例えば、(1〜5)はMay 01 2008からSep 02, 2008ということです。
 
 ### 結果
-結果は下記のように保存される。
+結果は下記のように保存されます。
 - 各エネルギーの値の推移が、output/energy/(prefix)-(期間のindex)-(実行時のタイムスタンプ).txt、
 - Data Samplerのモデルが、output/model/(prefix)-(期間のindex)-(実行時のタイムスタンプ).txt
 
@@ -129,6 +129,9 @@ optional arguments:
   -lr LR                learning rate
 ```
 --prefixに指定したものと同じprefixを持つData Samplerの中で最もコストの値を下げられたものを使います。その他、-lはSVDを行うサーキットの深さを指定します。svdに関しては無限回サンプルできたと仮定する(=state_vectorを使って最適化する)ので、現状実機を指定するオプションを用意していません。
+### 結果
+結果は下記のように保存されます。
+- SVD 実行後のモデルが、output/svd_model/(prefix)-(期間のindex)-(実行時のタイムスタンプ).txt
 
 ## Entropyの計算
 プロジェクトのルート/svd/に移動し、下記で実行可能です。
@@ -147,6 +150,13 @@ optional arguments:
   --prefixes [PREFIXES [PREFIXES ...]]
                         list of prefixes of the model and the energy files
 ```
---prefixesには計算
-  -i ITER, --iter ITER  # of iterations in a trial
-  -i ITER, --iter ITER  # of iterations in a tria
+--prefixesにはエントロピーを計算させたい、実験セッティングのprefixを一つずつ、記述します。
+
+```
+python compute_entropy.py --prefixes default tronto classical
+```
+ここで、classicalを指定すると、古典計算も実行します。
+
+# 結果
+- output/entropy/(prefix).txt の形で保存します。
+
