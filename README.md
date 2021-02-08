@@ -29,7 +29,17 @@ ceaf7e4xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 # 実行方法
+## データ
+Dow Jones Industrial Averageに含まれる銘柄の中で、2008年末の時価総額トップ4(https://toyokeizai.net/articles/-/2713)を利用する。
+- XOM (Exxonmobil)
+- WMT (Walmart)
+- PG (P&G)
+- MSFT (Microsoft)
+
+データとしては、2008年4月から2009年3月の月初のopening priceの値を用いる。データはこのパッケージにすでに含まれている。
+
 ## データロードサーキットの学習
+### 実行方法
 プロジェクトのルート/svd/に移動し、下記で実行可能。
 ```
 python learn_sampler.py (オプション)
@@ -62,8 +72,65 @@ optional arguments:
 
 ```
 
-基本的には、-d, -r, --prefixのみを利用する。例えばibmq_trontoをreservationで実行したければ
+基本的には、-d, -r, -l, --prefixを利用する。例えば5層のAnsatzを使って、ibmq_trontoをreservationで実行したければ
 ```
-python learn_sampler.py -d ibmq_tronto -r True --prefix tronto
+python learn_sampler.py -l 5 -d ibmq_tronto -r True --prefix tronto
 ```
-とする。--prefixは、実験セッティングを区別するラベルに対応するので、わかりやすい名前をつけるのが推奨される(何も指定しなければ、"default"になる)。なお、-d, -rを指定しなければ、単にqasm_simulatorで実行される。-dsと-deはスクリプト
+とする。--prefixは、実験セッティングを区別するラベルに対応するので、わかりやすい名前をつけるのが推奨される(何も指定しなければ、"default"になる)。--prefixをnaive以外に設定すれば、2つのサーキットを使って最適化される。naiveに設定すると、一つのサーキットを使って最適化する。
+なお、-d, -rを指定しなければ、単にqasm_simulatorで実行される。-ds, -deは、SVD entropyを計算する期間に対応している。例えば、
+
+```
+python learn_sampler.py -ds 1 -de 3
+```
+とすれば、3つの期間:(1〜5), (2〜6), (3〜7)のSVD entropyを計算するための、3つのデータロードサーキットを学習することに相当する。なお、dateの0, 1, 2...は下記のように対応する。
+
+``` input/date.txt
+0	Apr 01, 2008
+1	May 01, 2008
+2	Jun 02, 2008
+3	Jul 01, 2008
+4	Aug 01, 2008
+5	Sep 02, 2008
+6	Oct 01, 2008
+7	Nov 03, 2008
+8	Dec 01, 2008
+9	Jan 02, 2009
+10	Feb 02, 2009
+11	Mar 02, 2009
+12	Apr 01, 2009
+```
+例えば、(1〜5)はMay 01 2008からSep 02, 2008ということである。
+
+### 結果
+結果は下記のように保存される。
+- 各エネルギーの値の推移が、output/energy/(prefix)-(期間のindex)-(実行時のタイムスタンプ).txt、
+- Data Samplerのモデルが、output/model/(prefix)-(期間のindex)-(実行時のタイムスタンプ).txt
+
+## SVD の実行
+プロジェクトのルート/svd/に移動し、下記で実行可能。
+```
+python learn_svd.py (オプション)
+```
+先ほどと同様、下記にてオプションを確認できる。
+
+```
+python learn_svd.py -h
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DEVICE, --device DEVICE
+                        name of the ibmq device ex: ibmq_tronto
+  -i ITER, --iter ITER  # of iterations in a trial
+  -r RESERVATION, --reservation RESERVATION
+                        if you made reservation, set true
+  -t TRIAL, --trial TRIAL
+                        # of trials
+  -l LAYER, --layer LAYER
+                        # of layers
+  -ds DS                start date index
+  -de DE                end of date index
+  --prefix PREFIX       prefix of the model and the energy files
+  -lr LR                learning rate
+```
+--prefixには、learn_sampler.pyの実行時と同じものを指定すると、learn_sampler.pyで学習したData Samplerの中で最もコストの値を下げられたものを使う。その他、
+                       
