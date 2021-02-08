@@ -13,7 +13,7 @@ def plot(start, hadamard, prefix):
     probability = coefficient.to_probability()
     min, model, layer_count = pickup(start, prefix)
     data_factory = ParametrizedQiskitSamplerFactory(layer_count, 5)
-    data_sampler = data_factory.load("{}/{}".format(const.DATE_PATH, model))
+    data_sampler = data_factory.load("{}/{}".format(const.MODEL_PATH, model))
     if hadamard:
         data_sampler.circuit.additional_circuit = AllHadamardCircuit(5)
         probability = coefficient.to_hadamard_probability()
@@ -27,10 +27,10 @@ def plot(start, hadamard, prefix):
 
 
 def plot_mmd(start, prefix):
-    min, model, layer_count = pickup(start, prefix)[1]
+    min, model, layer_count = pickup(start, prefix)
     import matplotlib.pyplot as p
     p.clf()
-    with open("output/{}".format(model.replace("model", "energy"))) as f:
+    with open("{}/{}".format(const.ENERGY_PATH, model)) as f:
         lines = f.readlines()
         mmds = []
         converted_mmds = []
@@ -58,7 +58,7 @@ def plot_mmd(start, prefix):
         p.ylabel("the value", fontsize=12)
         p.grid(which='major', color='black', linestyle='-')
         p.legend(fontsize=12)
-        p.savefig("quality/cost_{}.png".format(start))
+        p.savefig("{}/cost_{}.png".format(const.FINAL_FIGURE_PATH, start))
 
 
 def find_titles(hadamard):
@@ -76,42 +76,42 @@ def plot_option_func(plt):
     plt.grid(which='major', color='black', linestyle='-')
 
 
-def plot_data_circuit():
-    model = pickup(99, "5")[1]
+def plot_data_circuit(prefix):
+    model = pickup(0, prefix)[1]
     data_factory = ParametrizedQiskitSamplerFactory(6, 5)
-    data_sampler = data_factory.load("output/" + model)
+    data_sampler = data_factory.load("{}/{}".format(const.MODEL_PATH, model))
     data_sampler.circuit.draw_mode = True
     style = {'gatefacecolor': 'lightgreen', 'latexdrawerstyle': True}
     data_sampler.circuit.to_qiskit().draw("mpl", style=style, plot_barriers=False)
     import matplotlib.pyplot as p
-    p.savefig("./quality/fig_data_circuit.png")
-    p.savefig("./quality/fig_data_circuit.eps")
+    p.savefig("{}/fig_data_circuit.png".format(const.FINAL_FIGURE_PATH))
+    p.savefig("{}/fig_data_circuit.eps".format(const.FINAL_FIGURE_PATH))
 
 
-def plot_svd_circuit():
-    model = pickup(99, "5")[1]
+def plot_svd_circuit(prefix):
+    model = pickup(0, prefix)[1]
     data_factory = ParametrizedQiskitSamplerFactory(6, 5)
-    data_sampler = data_factory.load("output/" + model)
+    data_sampler = data_factory.load("{}/{}".format(const.MODEL_PATH, model))
     data_circuit = data_sampler.circuit
     data_circuit.draw_mode = True
-    filename = "5composite-" + model + ".txt"
     data_circuit.additional_circuit = HadamardAndMeausre(0)
     c_factory = SVDQiskitSamplerFactory(8, data_circuit)
-    sampler = c_factory.load("output/" + filename)
+    sampler = c_factory.load("{}/{}".format(const.SVD_MODEL_PATH, model))
     style = {'gatefacecolor': 'lightgreen', 'latexdrawerstyle': True}
     sampler.circuit.draw_mode = True
     sampler.circuit.parameter_name = "\\xi"
     sampler.circuit.another_parameter_name = "\\xi^{\prime}"
     sampler.draw("mpl", style=style)
     import matplotlib.pyplot as p
-    p.savefig("./quality/fig_svd_circuit.png")
-    p.savefig("./quality/fig_svd_circuit.eps")
+    p.savefig("{}/fig_svd_circuit.png".format(const.FINAL_FIGURE_PATH))
+    p.savefig("{}/fig_svd_circuit.eps".format(const.FINAL_FIGURE_PATH))
 
 
 if __name__ == '__main__':
+    prefix = const.DEFAULT_PREFIX
     for start in range(0, 8):
         for hadamard in [False, True]:
-            plot(start, hadamard, "default")
-        plot_mmd(start, "default")
-    plot_data_circuit()
-    plot_svd_circuit()
+            plot(start, hadamard, prefix)
+        plot_mmd(start, prefix)
+    plot_data_circuit(prefix)
+    plot_svd_circuit(prefix)
