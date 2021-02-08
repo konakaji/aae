@@ -163,5 +163,5 @@ python compute_entropy.py --prefixes default tronto classical
 ```
 ここで、classicalを指定すると、古典計算も実行します。
 
-## 結果
+### 結果
 - output/entropy/(prefix).txt の形で保存します。
