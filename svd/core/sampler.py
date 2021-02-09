@@ -28,9 +28,8 @@ class SampleJobFuture:
             return self.result
         try:
             job_result = self.job.result()
-        except (qiskit.providers.ibmq.job.IBMQJobInvalidStateError,
-                qiskit.providers.ibmq.job.IBMQJobFailureError,
-                qiskit.providers.ibmq.job.IBMQJobApiError) as e:
+
+        except qiskit.exceptions.QiskitError as e:
             raise SamplerException(e)
         self.result = self.listener(job_result)
         return self.result
