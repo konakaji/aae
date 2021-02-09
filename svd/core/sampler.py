@@ -71,7 +71,7 @@ class QiskitSampler(Sampler):
 
         def listener(result):
             samples = []
-            for bitstring, count in result.items():
+            for bitstring, count in result.get_counts().items():
                 for i in range(count):
                     bitarray = self.encoder.to_bitarray(bitstring)
                     samples.append(Sample(bitarray))
