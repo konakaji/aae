@@ -79,7 +79,7 @@ class QiskitSampler(Sampler):
             return samples
 
         job = qiskit.execute(qc, self.simulator, shots=n_shot,
-                             initial_layout=qiskit.transpiler.layout.generate_trivial_layout())
+                             initial_layout=qiskit.transpiler.Layout.generate_trivial_layout())
         future = SampleJobFuture(job, listener)
         return future
 
