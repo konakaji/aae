@@ -131,9 +131,9 @@ def do_learn(args, output, energy_output, coefficient, naive=False):
 def learn(args):
     context = Context()
     usecase = context.get_coefficient_usecase()
-    for date_index in range(args.ds, args.de + 1):
-        coefficient = usecase.load(const.TIME_SPAN, date_index, sub=const.STOCK_COUNT)
-        for i in range(args.trial):
+    for i in range(args.trial):
+    	for date_index in range(args.ds, args.de + 1):
+            coefficient = usecase.load(const.TIME_SPAN, date_index, sub=const.STOCK_COUNT)
             label = int(time())
             filename = "{}/{}-{}-{}.txt".format(const.MODEL_PATH, args.prefix, date_index, label)
             energy_filename = "{}/{}-{}-{}.txt".format(const.ENERGY_PATH, args.prefix, date_index, label)
@@ -154,7 +154,7 @@ if __name__ == '__main__':
     parser.add_argument("-ds", help='start of date index', type=int, default=0)
     parser.add_argument("-de", help='end of date index', type=int, default=7)
     parser.add_argument("-c", "--cutoff", help='cut off of the kernel', type=int, default=1)
-    parser.add_argument("--prefix", help='prefix of the model and the energy files', default=const.DEFAULT_PREFIX)
+    parser.add_argument("--prefix", help='pr1efix of the model and the energy files', default=const.DEFAULT_PREFIX)
     parser.add_argument("-lr", help='learning rate', type=int, default=0.1)
     args = parser.parse_args()
     print(args)
