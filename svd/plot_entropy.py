@@ -8,7 +8,7 @@ from matplotlib import pyplot
 import svd.constant as const
 
 
-def plot(prefix, label, marker):
+def plot(prefix, label, marker, color):
     with open("{}/{}.txt".format(const.ENTROPY_PATH, prefix)) as f:
         xs = []
         values = []
@@ -16,11 +16,12 @@ def plot(prefix, label, marker):
             x, value = l.rstrip().split("\t")
             xs.append(x)
             values.append(float(value))
-    pyplot.plot(xs, values, label=label, marker=marker, markersize=10)
+    pyplot.plot(xs, values, label=label, marker=marker, markersize=10, color=color, linewidth=2)
 
 
 if __name__ == '__main__':
     markers = ["s", "x", "o", "D"]
+    colors = ["orange", "green", "blue", "red"]
     label_map = {const.CLASSICAL_PREFIX: "exact", const.NAIVE_PREFIX: "naive",
                  const.DEFAULT_PREFIX: "our algorithm"}
     parser = ArgumentParser()
@@ -41,7 +42,7 @@ if __name__ == '__main__':
             label = label_map[prefix]
         else:
             label = prefix
-        plot(prefix, label, markers[i % len(markers)])
+        plot(prefix, label, markers[i % len(markers)], colors[i % len(colors)])
     pyplot.legend(fontsize=16)
     pyplot.savefig(const.ENTROPY_FIGURE)
     pyplot.savefig(const.ENTROPY_FIGURE_EPS)

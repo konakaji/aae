@@ -44,8 +44,7 @@ class CoefficientUsecase:
         size = 0
         for tick in self.ticker_repository.find_all_ticks():
             histories = self.history_repository.find_history_by_tick(tick)
-            if len(histories) == 0 or histories[len(histories) - 1].date != "Apr 01, 2009" or histories[
-                0].date != "Apr 01, 2008":
+            if len(histories) == 0:
                 print("insufficient data:" + tick)
                 continue
             results.append(tick)
@@ -69,5 +68,7 @@ class CoefficientUsecase:
             if previous is None:
                 previous = h.open_price
                 continue
-            results.append(math.log(h.open_price) - math.log(previous))
+            result = math.log(h.open_price) - math.log(previous)
+            results.append(result)
+            previous = h.open_price
         return results

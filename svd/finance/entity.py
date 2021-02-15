@@ -16,6 +16,13 @@ class StateCoefficient:
     def __init__(self, data: array):
         self.data = data
 
+    def norm(self):
+        result = 0
+        for d in self.data:
+            for v in d:
+                result = result + v * v
+        return result
+
     def to_state(self):
         stock_dimension = math.ceil(math.log2(len(self.data)))
         time_dimension = math.ceil(math.log2(len(self.data[0])))

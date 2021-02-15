@@ -15,6 +15,7 @@ import svd.constant as const
 
 
 def do_compute_classical(coefficient):
+    print(coefficient.data)
     result = np.diag(np.zeros(4, dtype=np.complex))
     for i in range(len(coefficient.data)):
         for j in range(len(coefficient.data)):
