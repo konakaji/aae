@@ -1,4 +1,4 @@
-import math, sys, warnings
+import math, sys, warnings, random
 from time import time
 
 sys.path.append("../")
@@ -132,7 +132,8 @@ def learn(args):
     context = Context()
     usecase = context.get_coefficient_usecase()
     for i in range(args.trial):
-    	for date_index in range(args.ds, args.de + 1):
+        for date_index in range(args.ds, args.de + 1):
+            random.seed(31 * i + 17 * date_index)
             coefficient = usecase.load(const.TIME_SPAN, date_index, sub=const.STOCK_COUNT)
             label = int(time())
             filename = "{}/{}-{}-{}.txt".format(const.MODEL_PATH, args.prefix, date_index, label)

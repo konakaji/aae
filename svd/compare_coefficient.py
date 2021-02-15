@@ -1,8 +1,8 @@
 import sys, warnings
-
 sys.path.append("../")
 warnings.filterwarnings('ignore')
 
+from svd.compute_entropy import do_compute_classical
 from svd.finance.context import Context
 from svd.finance.entity import StateCoefficient
 from svd.core.sampler import ParametrizedQiskitSamplerFactory
@@ -57,7 +57,16 @@ def do_compare(f, prefix, i, coefficient):
             if correct:
                 vector = post_select(v, 4, 1, const.DATA_QUBITS)
                 break
+        result = []
+        r = []
+        for v in vector:
+            if len(r) % 4 == 0:
+                r = []
+                result.append(r)
+            r.append(v.real)
         f.write("{}({})\t{}\n".format(i, "learned", print_state_tex(vector, 4)))
+        print("target", do_compute_classical(coefficient))
+        print("learned", do_compute_classical(StateCoefficient(result)))
 
 
 def compare(args):
