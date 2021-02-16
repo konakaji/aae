@@ -120,20 +120,25 @@ def do_learn(args, output, energy_output, coefficient, naive=False):
     # the main optimization algorithm
     optimization.optimize()
     # save the progress to the file
-    optimization.task_watcher.save(energy_output)
-    # save the model to the file
-    factory.save(output, data_sampler,
-                 {const.ENERGY_KEY: total_cost(data_sampler) + total_cost(data_sampler),
-                  const.LAYER_KEY: args.layer})
+    if not args.dry:
+        optimization.task_watcher.save(energy_output)
+        # save the model to the file
+        factory.save(output, data_sampler,
+                     {const.ENERGY_KEY: total_cost(data_sampler),
+                      const.LAYER_KEY: args.layer})
     return data_sampler
 
 
 def learn(args):
     context = Context()
     usecase = context.get_coefficient_usecase()
-    for i in range(args.trial):
+    for i in range(args.offset, args.offset + args.trial):
         for date_index in range(args.ds, args.de + 1):
-            random.seed(31 * i + 17 * date_index)
+            print("learning: date-index={} trial={}-th.".format(date_index, i))
+            if args.prefix == const.NAIVE_PREFIX:
+                random.seed(43 * (i + 1) + 17 * date_index)
+            else:
+                random.seed(31 * (i + 1) + 17 * date_index)
             coefficient = usecase.load(const.TIME_SPAN, date_index, sub=const.STOCK_COUNT)
             label = int(time())
             filename = "{}/{}-{}-{}.txt".format(const.MODEL_PATH, args.prefix, date_index, label)
@@ -148,11 +153,13 @@ if __name__ == '__main__':
     parser.add_argument("-d", "--device", help='name of the ibmq device ex: ibmq_tronto')
     parser.add_argument("-i", "--iter", help='# of iterations in a trial', type=int, default=200)
     parser.add_argument("-r", "--reservation", type=bool, help='if you made reservation, set true', default=False)
-    parser.add_argument("-t", "--trial", help='# of trials', type=int, default=10)
+    parser.add_argument("-t", "--trial", help='# of trials', type=int, default=5)
+    parser.add_argument("-o", "--offset", type=int, default=0)
     parser.add_argument("-l", "--layer", help='# of layers', type=int, default=6)
     parser.add_argument("-n", "--nshot", help='# of Nshot', type=int, default=400)
     parser.add_argument("-v", "--variance", help='variance of Gaussian Kernel', type=float, default=0.25)
     parser.add_argument("-ds", help='start of date index', type=int, default=0)
+    parser.add_argument("--dry", help='dry run', type=bool, default=False)
     parser.add_argument("-de", help='end of date index', type=int, default=7)
     parser.add_argument("-c", "--cutoff", help='cut off of the kernel', type=int, default=1)
     parser.add_argument("--prefix", help='pr1efix of the model and the energy files', default=const.DEFAULT_PREFIX)

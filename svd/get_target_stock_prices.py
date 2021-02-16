@@ -18,7 +18,7 @@ if __name__ == '__main__':
     repository = c.get_history_repository()
     ticks = const.DEFAULT_STOCKS
     start = 0
-    end = 12
+    end = 11
     dates = []
     with open(const.DATE_PATH) as f:
         for l in f.readlines():
@@ -35,7 +35,7 @@ if __name__ == '__main__':
             for h in histories:
                 prices.append(str(h.open_price))
             f.write("{}\t{}\n".format(tick, "\t".join(prices)))
-    p.figure(facecolor="white", edgecolor="black", linewidth=1, figsize=[20, 8])
+    p.figure(facecolor="white", edgecolor="black", linewidth=1, figsize=[10, 6])
     p.grid(which='major', color='gray', linestyle='-')
     p.tick_params(labelsize=16)
     p.xlabel("date", fontsize=16)

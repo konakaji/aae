@@ -16,14 +16,19 @@ def plot(prefix, label, marker, color):
             x, value = l.rstrip().split("\t")
             xs.append(x)
             values.append(float(value))
-    pyplot.plot(xs, values, label=label, marker=marker, markersize=10, color=color, linewidth=2)
+    width = 3
+    if prefix == "naive":
+        width = 1
+    if prefix == "classical":
+        width = 2
+    pyplot.plot(xs, values, label=label, marker=marker, markersize=10, color=color, linewidth=width)
 
 
 if __name__ == '__main__':
     markers = ["s", "x", "o", "D"]
     colors = ["orange", "green", "blue", "red"]
     label_map = {const.CLASSICAL_PREFIX: "exact", const.NAIVE_PREFIX: "naive",
-                 const.DEFAULT_PREFIX: "our algorithm"}
+                 "eight": "our algorithm"}
     parser = ArgumentParser()
     parser.add_argument("-ds", help='start date index', type=int, default=0)
     parser.add_argument("-de", help='end of date index', type=int, default=7)
@@ -35,7 +40,7 @@ if __name__ == '__main__':
     pyplot.title('Transition of the SVD Entropy', fontsize=18)
     pyplot.xlabel("date", fontsize=20)
     pyplot.ylabel("the SVD Entropy", fontsize=20)
-    pyplot.ylim([0.3, 1.3])
+    pyplot.ylim([0.25, 1.35])
     pyplot.grid(which='major', color='black', linestyle='-')
     for i, prefix in enumerate(args.prefixes):
         if prefix in label_map:

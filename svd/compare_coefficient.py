@@ -40,6 +40,7 @@ def is_correct(state_vector, i, bit, n_qubit):
 
 def do_compare(f, prefix, i, coefficient):
     min, filename, layer_count = pickup(i, prefix)
+    print(min, filename)
     f.write("{}({})\t{}\n".format(i, "target", print_state_tex(coefficient.data.flatten(), 4)))
     if prefix == const.NAIVE_PREFIX:
         s_factory = ParametrizedQiskitSamplerFactory(layer_count, const.DATA_QUBITS - 1)
@@ -57,16 +58,16 @@ def do_compare(f, prefix, i, coefficient):
             if correct:
                 vector = post_select(v, 4, 1, const.DATA_QUBITS)
                 break
-        result = []
-        r = []
-        for v in vector:
-            if len(r) % 4 == 0:
-                r = []
-                result.append(r)
-            r.append(v.real)
         f.write("{}({})\t{}\n".format(i, "learned", print_state_tex(vector, 4)))
-        print("target", do_compute_classical(coefficient))
-        print("learned", do_compute_classical(StateCoefficient(result)))
+    result = []
+    r = []
+    for v in vector:
+        if len(r) % 4 == 0:
+            r = []
+            result.append(r)
+        r.append(v.real)
+    print("target", do_compute_classical(coefficient))
+    print("learned", do_compute_classical(StateCoefficient(result)))
 
 
 def compare(args):
