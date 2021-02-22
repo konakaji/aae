@@ -1,6 +1,7 @@
 from svd.finance.context import Context
 from svd.util import date_format
 import svd.constant as const
+import math
 import matplotlib.pyplot as p
 
 
@@ -8,9 +9,13 @@ def plot(tick, dates, start, end, index):
     marker = ["s", "x", "o", "D"][index]
     histories = repository.find_history_by_tick(tick)[start: end + 1]
     prices = []
+    previous = None
     for h in histories:
-        prices.append(h.open_price)
-    p.plot(dates, prices, label=tick, linewidth=2, marker=marker)
+        if previous is None:
+            previous = h
+            continue
+        prices.append(math.log(h.open_price) - math.log(previous.open_price))
+    p.plot(dates[1:], prices, label=tick, linewidth=1, marker=marker)
 
 if __name__ == '__main__':
     c = Context()
@@ -35,14 +40,14 @@ if __name__ == '__main__':
             for h in histories:
                 prices.append(str(h.open_price))
             f.write("{}\t{}\n".format(tick, "\t".join(prices)))
-    p.figure(facecolor="white", edgecolor="black", linewidth=1, figsize=[10, 6])
+    p.figure(facecolor="white", edgecolor="black", linewidth=1, figsize=[14, 6])
     p.grid(which='major', color='gray', linestyle='-')
-    p.tick_params(labelsize=16)
-    p.xlabel("date", fontsize=16)
-    p.ylabel("price ($)", fontsize=16)
+    p.tick_params(labelsize=14)
+    p.xlabel("date", fontsize=14)
+    p.ylabel(r"$r_{jt}$", fontsize=14)
     for i, tick in enumerate(ticks):
         plot(tick, dates, start, end, i)
-    p.legend(fontsize=16)
+    p.legend(fontsize=14)
     p.savefig(const.PRICE_FIGURE_PATH)
 
 
