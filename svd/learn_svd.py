@@ -1,4 +1,4 @@
-import sys, warnings, os
+import sys, warnings
 
 sys.path.append("../")
 warnings.filterwarnings('ignore')
@@ -16,9 +16,6 @@ from argparse import ArgumentParser
 
 def do_learn(args, date_index):
     min, filename, data_layer = pickup(date_index, args.prefix)
-    if os.path.exists("{}/{}".format(const.SVD_MODEL_PATH, filename)):
-        print("file already exists")
-        return
     data_qubit = const.DATA_QUBITS
     if args.prefix == const.NAIVE_PREFIX:
         data_qubit = const.DATA_QUBITS - 1
@@ -41,13 +38,12 @@ def do_learn(args, date_index):
 
 def learn(args):
     for date_index in range(args.ds, args.de + 1):
-        print(date_index)
         do_learn(args, date_index)
 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument("-i", "--iter", help='# of iterations in a trial', type=int, default=400)
+    parser.add_argument("-i", "--iter", help='# of iterations in a trial', type=int, default=200)
     parser.add_argument("-t", "--trial", help='# of trials', type=int, default=1)
     parser.add_argument("-l", "--layer", help='# of layers', type=int, default=8)
     parser.add_argument("-ds", help='start date index', type=int, default=0)

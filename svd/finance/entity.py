@@ -34,7 +34,7 @@ class StateCoefficient:
                 num = data_num + j
                 results[num] = value
         rs = []
-        for r in sorted(results.items(), key=lambda a: a[0]):
+        for r in sorted(results.items(), key=lambda a : a[0]):
             rs.append(r[1])
         return rs
 
@@ -71,27 +71,6 @@ class StateCoefficient:
                     bitarray.append(0)
                 num = ancilla_encoder.decode(bitarray)
                 result.add(num, value * value)
-        return result
-
-    def to_ancilla_state(self):
-        data = self.data
-        stock_dimension = math.ceil(math.log2(len(data)))
-        time_dimension = math.ceil(math.log2(len(data[0])))
-        n = stock_dimension + time_dimension
-        encoder = Encoder(n)
-        ancilla_encoder = Encoder(n + 1)
-        result = {}
-        for i, d in enumerate(data):
-            data_num = pow(2, time_dimension) * i
-            for j, value in enumerate(d):
-                num = data_num + j
-                bitarray = encoder.encode(num)
-                if value < 0:
-                    bitarray.append(1)
-                else:
-                    bitarray.append(0)
-                num = ancilla_encoder.decode(bitarray)
-                result[num] = value
         return result
 
     def to_hadamard_probability(self) -> Probability:

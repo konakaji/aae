@@ -87,17 +87,3 @@ if __name__ == '__main__':
                         default=const.DEFAULT_PREFIX)
     args = parser.parse_args()
     compare(args)
-    #
-    # context = Context()
-    # usecase = context.get_coefficient_usecase()
-    # coefficient: StateCoefficient = usecase.load(5, 0, sub=4)
-    # for k, value in coefficient.to_ancilla_state().items():
-    #     j = int(k / 8)
-    #     t = int((k - 8 * j)/2)
-    #     extra = k - 8 * j - 2 * t
-    #     result = 0
-    #     if coefficient.data[j][t] > 0 and extra == 0:
-    #         result = coefficient.data[j][t]
-    #     elif coefficient.data[j][t] < 0 and extra == 1:
-    #         result = coefficient.data[j][t]
-    #     print(value, result)

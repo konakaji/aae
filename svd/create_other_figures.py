@@ -82,15 +82,15 @@ def plot_data_circuit(prefix):
     data_sampler = data_factory.load("{}/{}".format(const.MODEL_PATH, model))
     data_sampler.circuit.draw_mode = True
     style = {'gatefacecolor': 'lightgreen', 'latexdrawerstyle': True}
-    data_sampler.draw("mpl", style=style)
+    data_sampler.circuit.to_qiskit().draw("mpl", style=style, plot_barriers=False)
     import matplotlib.pyplot as p
     p.savefig("{}/fig_data_circuit.png".format(const.FINAL_FIGURE_PATH))
     p.savefig("{}/fig_data_circuit.eps".format(const.FINAL_FIGURE_PATH))
 
 
 def plot_svd_circuit(prefix):
-    min, model, layer = pickup(0, prefix)
-    data_factory = ParametrizedQiskitSamplerFactory(layer, 5)
+    model = pickup(0, prefix)[1]
+    data_factory = ParametrizedQiskitSamplerFactory(6, 5)
     data_sampler = data_factory.load("{}/{}".format(const.MODEL_PATH, model))
     data_circuit = data_sampler.circuit
     data_circuit.draw_mode = True
@@ -108,7 +108,7 @@ def plot_svd_circuit(prefix):
 
 
 if __name__ == '__main__':
-    prefix = "eight"
+    prefix = const.DEFAULT_PREFIX
     for start in range(0, 8):
         for hadamard in [False, True]:
             plot(start, hadamard, prefix)
