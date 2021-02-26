@@ -6,7 +6,7 @@ import math
 
 
 class ImageGenrator:
-    def __init__(self, output_directory, probability: Probability, converter: Converter=None):
+    def __init__(self, output_directory, probability: Probability, converter: Converter = None):
         self.output = output_directory
         self.probability = probability
         self.converter = converter
@@ -43,7 +43,7 @@ class TaskWatcher:
         if self.step % 10 == 0:
             sampler.circuit.additional_circuit = None
             for image_generator in self.image_generators:
-               image_generator.generate(self.step, sampler)
+                image_generator.generate(self.step, sampler)
         self.step = self.step + 1
 
     def save(self, path):

@@ -7,7 +7,10 @@ def pickup(index, prefix):
     current = None
     min = const.INTEGER_MAX
     layer = None
-    for filename in os.listdir(const.MODEL_PATH):
+    count = 0
+    files = os.listdir(const.MODEL_PATH)
+    files.sort()
+    for filename in files:
         if not filename.startswith(prefix + "-"):
             continue
         if filename.__contains__("-" + str(index) + "-"):
@@ -20,6 +23,9 @@ def pickup(index, prefix):
                     min = e
                     layer = l
                     current = filename
+            count = count + 1
+            # if count == 5:
+            #     break
     return min, current, layer
 
 def date_format(date_str):

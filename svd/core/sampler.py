@@ -55,9 +55,11 @@ class QiskitSampler(Sampler):
         if self.factory is not None:
             self.simulator = self.factory.get_backend()
 
-    def draw(self, output='mpl', style=None):
+    def draw(self, output='mpl', style=None, registers=None):
         qc, q_register = self._build_circuit()
-        qc.measure(self._all_register(), self._all_register())
+        if registers is None:
+            registers = self._all_register()
+        qc.measure(registers, registers)
         qc.draw(output=output, fold=-1, style=style, plot_barriers=False)
 
     def sample(self, n_shot) -> SampleJobFuture:

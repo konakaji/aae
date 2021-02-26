@@ -150,12 +150,14 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
-svd/figure/*
-svd/output/coefficients/*
-svd/output/figure/*
-svd/output/data_model/*
-svd/output/svd_model/*
-svd/output/energy/*
-svd/output/figure/*
-svd/output/figure_second/*
+#svd/figure/*
+#svd/output/coefficients/*
+#svd/output/figure/*
+#svd/output/data_model/*
+#svd/output/svd_model/*
+#svd/output/energy/*
+#svd/output/figure/*
+#svd/output/figure_second/*
 ibmq/.ibmq_key
+svd/check_if_consistent.py
+svd/root.py

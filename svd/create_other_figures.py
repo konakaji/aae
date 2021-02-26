@@ -17,7 +17,7 @@ def plot(start, hadamard, prefix):
     if hadamard:
         data_sampler.circuit.additional_circuit = AllHadamardCircuit(5)
         probability = coefficient.to_hadamard_probability()
-        start = start * 100
+        start = start + 100
     generator = ImageGenrator(const.FINAL_FIGURE_PATH, probability)
     titles = find_titles(hadamard)
     generator.probability_title = titles[0]
@@ -101,7 +101,7 @@ def plot_svd_circuit(prefix):
     sampler.circuit.draw_mode = True
     sampler.circuit.parameter_name = "\\xi"
     sampler.circuit.another_parameter_name = "\\xi^{\prime}"
-    sampler.draw("mpl", style=style)
+    sampler.draw("mpl", style=style, registers=[1, 2, 3, 4])
     import matplotlib.pyplot as p
     p.savefig("{}/fig_svd_circuit.png".format(const.FINAL_FIGURE_PATH))
     p.savefig("{}/fig_svd_circuit.eps".format(const.FINAL_FIGURE_PATH))
