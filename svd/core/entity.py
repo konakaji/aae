@@ -1,5 +1,4 @@
 from svd.core.encoder import Encoder
-import matplotlib
 
 
 class Sample:
@@ -12,6 +11,11 @@ class Sample:
             if s != b:
                 return False
         return True
+
+
+class Coefficient:
+    def __init__(self, data):
+        self.data = data
 
 
 class Probability:
