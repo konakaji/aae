@@ -10,7 +10,7 @@ class QiskitCircuit:
 
     def to_qiskit(self):
         q = qiskit.QuantumRegister(self.n_qubit)
-        qc = qiskit.QuantumCircuit(q)
+        qc = qiskit.QuantumCircuit(q, qiskit.ClassicalRegister(self.n_qubit))
         return self.merge(qc, q)[0]
 
     def dagger(self):

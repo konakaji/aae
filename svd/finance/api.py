@@ -7,7 +7,7 @@ URL_FORMAT = "https://finance.yahoo.com/quote/{}/history?period1={}&period2={}&i
 class HistoryApi:
     def download(self, tick):
         total_min = 1207008000
-        total_max = 1241136000
+        total_max = 1364896000
         step = 10000000
         min_timestamp = total_max - step
         max_timestamp = total_max

@@ -2,6 +2,7 @@ from svd.core.entity import Sample
 from svd.core.encoder import Encoder
 from svd.core.circuit import QiskitCircuit, \
     RandomCircuit, TENCircuit, TENCircuitFactory, HECircuitFactory, plus_circuit, minus_circuit
+from ibmq.base import DeviceFactory
 import qiskit, random, json
 
 
@@ -16,6 +17,28 @@ class Sampler:
         return []
 
 
+class SampleJobFuture:
+    def __init__(self, job, listener):
+        self.job = job
+        self.listener = listener
+        self.result = None
+
+    def get(self):
+        if self.result is not None:
+            return self.result
+        try:
+            job_result = self.job.result()
+
+        except qiskit.exceptions.QiskitError as e:
+            raise SamplerException(e)
+        self.result = self.listener(job_result)
+        return self.result
+
+
+class SamplerException(Exception):
+    pass
+
+
 class QiskitSampler(Sampler):
     def __init__(self, circuit: QiskitCircuit, n_qubit):
         self.circuit = circuit
@@ -23,39 +46,44 @@ class QiskitSampler(Sampler):
         self.n_qubit = n_qubit
         self.simulator = qiskit.Aer.get_backend("qasm_simulator")
         self.state_simulator = qiskit.Aer.get_backend("statevector_simulator")
+        self.factory: DeviceFactory = None
+        self.sync = False
         self.post_select = {}
+        self.max_retry = 5
 
-    def draw(self, output='mpl', style=None):
+    def recover(self):
+        if self.factory is not None:
+            self.simulator = self.factory.get_backend()
+
+    def draw(self, output='mpl', style=None, registers=None):
         qc, q_register = self._build_circuit()
-        qc.measure(self._all_register(), self._all_register())
+        if registers is None:
+            registers = self._all_register()
+        qc.measure(registers, registers)
         qc.draw(output=output, fold=-1, style=style, plot_barriers=False)
 
-    def sample(self, n_shot):
-        samples = []
-        while len(samples) < n_shot:
-            candidates = self.do_sample(n_shot)
-            for c in candidates:
-                samples.append(c)
-                if len(samples) == n_shot:
-                    random.shuffle(samples)
-                    return samples
+    def sample(self, n_shot) -> SampleJobFuture:
+        if len(self.post_select) > 0:
+            raise NotImplementedError()
+        return self.do_sample(n_shot)
 
     def do_sample(self, n_shot):
         qc, q = self._build_circuit()
         qc.measure(self._all_register(), self._all_register())
-        job = qiskit.execute(qc, self.simulator, shots=n_shot)
-        result = job.result().get_counts(qc)
-        samples = []
-        for bitstring, count in result.items():
-            for i in range(count):
-                add = True
-                bitarray = self.encoder.to_bitarray(bitstring)
-                for q_index, q_value in sorted(self.post_select.items(), key=lambda a: a[0], reverse=True):
-                    if bitarray.pop(q_index) != q_value:
-                        add = False
-                if add:
+
+        def listener(result):
+            samples = []
+            for bitstring, count in result.get_counts().items():
+                for i in range(count):
+                    bitarray = self.encoder.to_bitarray(bitstring)
                     samples.append(Sample(bitarray))
-        return samples
+            random.shuffle(samples)
+            return samples
+
+        job = qiskit.execute(qc, self.simulator, shots=n_shot,
+                             initial_layout=qiskit.transpiler.Layout.generate_trivial_layout())
+        future = SampleJobFuture(job, listener)
+        return future
 
     def exact_probabilities(self):
         results = {}

@@ -43,7 +43,7 @@ def learn(args):
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument("-i", "--iter", help='# of iterations in a trial', type=int, default=500)
+    parser.add_argument("-i", "--iter", help='# of iterations in a trial', type=int, default=200)
     parser.add_argument("-t", "--trial", help='# of trials', type=int, default=1)
     parser.add_argument("-l", "--layer", help='# of layers', type=int, default=8)
     parser.add_argument("-ds", help='start date index', type=int, default=0)

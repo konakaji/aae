@@ -1,5 +1,5 @@
 from svd.core.entity import Probability
-from svd.core.sampler import ParametrizedQiskitSampler, ParametrizedQiskitSamplerFactory
+from svd.core.sampler import ParametrizedQiskitSampler, ParametrizedQiskitSamplerFactory, SamplerException
 from svd.core.circuit import QiskitCircuit
 from svd.core.encoder import Encoder
 from svd.core.entity import Sample
@@ -12,30 +12,48 @@ class GradientCost:
         return []
 
 
+class InvalidStateException(Exception):
+    pass
+
+
 class MMDGradientCost(GradientCost):
     def __init__(self, probability: Probability, encoder: Encoder):
         self.probability = probability
         self.encoder = encoder
         self.custom_kernel = None
         self.cutoff = 0
+        self.max_retry = 5
 
     def sample_gradient(self, sampler: ParametrizedQiskitSampler,
                         factory: ParametrizedQiskitSamplerFactory, n_shot):
         return self.do_sample_gradient(sampler, factory, n_shot, self.probability)
 
     def do_sample_gradient(self, sampler: ParametrizedQiskitSampler,
-                           factory: ParametrizedQiskitSamplerFactory, n_shot, probability: Probability):
+                           factory: ParametrizedQiskitSamplerFactory, n_shot, probability: Probability, retry=0):
+        if retry == self.max_retry:
+            raise InvalidStateException("retry limit exceed")
         results = numpy.zeros((len(sampler.get_parameters())), float)
-        samples = sampler.sample(n_shot)
+        future = sampler.sample(n_shot)
+        pls_futures = []
+        minus_futures = []
         for j in range(len(results)):
             plus_sampler = factory.plus_sampler(sampler, j)
             plus_sampler.circuit.additional_circuit = sampler.circuit.additional_circuit
             minus_sampler = factory.minus_sampler(sampler, j)
             minus_sampler.circuit.additional_circuit = sampler.circuit.additional_circuit
-            pls = plus_sampler.sample(n_shot)
-            mis = minus_sampler.sample(n_shot)
-            result = self._compute_gradient(samples, pls, mis, n_shot, probability)
-            results[j] = result / len(samples)
+            pls_futures.append(plus_sampler.sample(n_shot))
+            minus_futures.append(minus_sampler.sample(n_shot))
+        try:
+            samples = future.get()
+            for j in range(len(results)):
+                pls = pls_futures[j].get()
+                mis = minus_futures[j].get()
+                result = self._compute_gradient(samples, pls, mis, n_shot, probability)
+                results[j] = result / len(samples)
+        except SamplerException as e:
+            sampler.recover()
+            print("error, retrying", e)
+            return self.do_sample_gradient(sampler, factory, n_shot, probability, retry + 1)
         return results
 
     def _compute_gradient(self, samples, pls, mis, n_shot, probability: Probability):

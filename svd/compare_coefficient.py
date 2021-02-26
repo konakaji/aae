@@ -1,8 +1,8 @@
 import sys, warnings
-
 sys.path.append("../")
 warnings.filterwarnings('ignore')
 
+from svd.compute_entropy import do_compute_classical
 from svd.finance.context import Context
 from svd.finance.entity import StateCoefficient
 from svd.core.sampler import ParametrizedQiskitSamplerFactory
@@ -40,6 +40,7 @@ def is_correct(state_vector, i, bit, n_qubit):
 
 def do_compare(f, prefix, i, coefficient):
     min, filename, layer_count = pickup(i, prefix)
+    print(min, filename)
     f.write("{}({})\t{}\n".format(i, "target", print_state_tex(coefficient.data.flatten(), 4)))
     if prefix == const.NAIVE_PREFIX:
         s_factory = ParametrizedQiskitSamplerFactory(layer_count, const.DATA_QUBITS - 1)
@@ -58,6 +59,15 @@ def do_compare(f, prefix, i, coefficient):
                 vector = post_select(v, 4, 1, const.DATA_QUBITS)
                 break
         f.write("{}({})\t{}\n".format(i, "learned", print_state_tex(vector, 4)))
+    result = []
+    r = []
+    for v in vector:
+        if len(r) % 4 == 0:
+            r = []
+            result.append(r)
+        r.append(v.real)
+    print("target", do_compute_classical(coefficient))
+    print("learned", do_compute_classical(StateCoefficient(result)))
 
 
 def compare(args):
