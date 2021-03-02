@@ -9,6 +9,7 @@ from svd.core.task import AdamGradientOptimizationTask
 from svd.core.gradient_cost import MultipleMMDGradientCost
 from svd.core.exact_cost import KLCost, MMDCost
 from svd.core.util import TaskWatcher, ImageGenrator
+from ibmq.allocator import NaiveQubitAllocator
 import time, qiskit, random
 
 ENERGY_KEY = "final-energy"
@@ -52,6 +53,7 @@ class DataLearning:
 
     def learn(self, coefficients: [float], device=None, filename="default-" + str(int(time.time())),
               reservation=False, n_shot=400, variance=0.25, iteration=200, lr_scheduler=UnitLRScheduler(0.1),
+              allocator=None,
               dry=False):
         encoder = Encoder(self.n)
         mapper = CoefficientMapper(self.n - 1, Encoder(self.n - 1), encoder)
@@ -60,9 +62,12 @@ class DataLearning:
         data_sampler.encoder = encoder
         if device is not None:
             from ibmq.base import DeviceFactory
+            if allocator is None:
+                allocator = NaiveQubitAllocator(self.n)
             device_factory = DeviceFactory(device, reservation=reservation)
             data_sampler.simulator = device_factory.get_backend()
             data_sampler.factory = device_factory
+            data_sampler.circuit.layout = allocator.allocate(data_sampler.simulator.configuration().coupling_map)
         optimizer = AdamOptimizer(lr_scheduler, maxiter=iteration)
         additional_circuit = AllHadamardCircuit(self.n)
         converter = CircuitAppender(additional_circuit)
