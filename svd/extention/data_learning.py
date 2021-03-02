@@ -50,7 +50,6 @@ class DataLearning:
             if correct:
                 return self._post_select(v, self.n - 1, 1, self.n)
 
-
     def learn(self, coefficients: [float], device=None, filename="default-" + str(int(time.time())),
               reservation=False, n_shot=400, variance=0.25, iteration=200, lr_scheduler=UnitLRScheduler(0.1),
               dry=False):

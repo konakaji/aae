@@ -4,6 +4,7 @@ import qiskit, random, math
 class QiskitCircuit:
     def __init__(self, n_qubit):
         self.n_qubit = n_qubit
+        self.layout = qiskit.transpiler.Layout.generate_trivial_layout()
 
     def merge(self, circuit: qiskit.QuantumCircuit, q_register: qiskit.QuantumRegister):
         return circuit, q_register
