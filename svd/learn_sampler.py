@@ -99,10 +99,14 @@ def do_learn(args, output, energy_output, coefficient, naive=False):
     data_sampler = factory.generate_real_he()
     data_sampler.encoder = encoder
     if args.device is not None:
-        from ibmq.base import get_backend, DeviceFactory
+        from ibmq.base import DeviceFactory
+        from ibmq.allocator import NaiveQubitAllocator
         device_factory = DeviceFactory(args.device, reservation=args.reservation)
         data_sampler.simulator = device_factory.get_backend()
         data_sampler.factory = device_factory
+        data_sampler.circuit.layout = NaiveQubitAllocator(n_qubit).allocate(
+            data_sampler.simulator.configuration().coupling_map)
+        print("allocated layout:", data_sampler.circuit.layout)
     scheduler = TransformingLRScheduler(lr=args.lr)
     scheduler.schedule(100, 0.01)
     optimizer = AdamOptimizer(scheduler, maxiter=args.iter)
