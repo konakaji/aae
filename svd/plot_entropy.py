@@ -43,6 +43,8 @@ if __name__ == '__main__':
     pyplot.ylim([0.25, 1.35])
     pyplot.grid(which='major', color='black', linestyle='-')
     for i, prefix in enumerate(args.prefixes):
+        if prefix == "none":
+            continue
         if prefix in label_map:
             label = label_map[prefix]
         else:

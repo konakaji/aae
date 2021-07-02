@@ -76,6 +76,7 @@ class AdamOptimizer(Optimizer):
 
     def do_optimize(self, gradient_function, init_args, func = None):
         params = np.array(init_args)
+        params_new = params
         derivative = gradient_function(params)
         self._m = np.zeros(len(derivative))
         self._v = np.zeros(len(derivative))

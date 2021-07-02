@@ -12,6 +12,9 @@ class Sample:
                 return False
         return True
 
+    def __repr__(self):
+        return str(self.data)
+
 
 class Coefficient:
     def __init__(self, data):

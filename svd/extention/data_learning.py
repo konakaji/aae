@@ -1,5 +1,5 @@
 import math
-from svd.core.mapper import CoefficientMapper
+from svd.core.mapper import CoefficientMapper, CoefficientMapperAllpos
 from svd.core.entity import Coefficient
 from svd.core.encoder import Encoder
 from svd.core.sampler import ParametrizedQiskitSamplerFactory, ParametrizedQiskitSampler, Sampler, Converter
@@ -20,15 +20,23 @@ MODEL_PATH = "output/data_model"
 ENERGY_PATH = "output/energy"
 
 
-class DataLearning:
+class DataLearningBase:
     def __init__(self, n_qubit: int, layer: int):
         self.n = n_qubit
         self.layer = layer
         self.factory = ParametrizedQiskitSamplerFactory(self.layer, self.n)
         self.sampler = None
 
-    def load(self, filename):
+    def load(self, filename, device=None, allocator=None, reservation=False):
         self.sampler = self.factory.load(MODEL_PATH + "/" + filename)
+        if device is not None:
+            from ibmq.base import DeviceFactory
+            if allocator is None:
+                allocator = NaiveQubitAllocator(self.n)
+            device_factory = DeviceFactory(device, reservation=reservation)
+            self.sampler.simulator = device_factory.get_backend()
+            self.sampler.factory = device_factory
+            self.sampler.circuit.layout = allocator.allocate(self.sampler.simulator.configuration().coupling_map)
 
     def add_data_gates(self, q_circuit: qiskit.QuantumCircuit, q_register: qiskit.QuantumRegister):
         qc, q_register = self.sampler.circuit.merge(q_circuit, q_register)
@@ -43,22 +51,22 @@ class DataLearning:
         return PostSelectJobFuture(execute, qc, n=self.n, post_select={self.n - 1: 1}, n_shot=shots)
 
     def get_state_vector(self):
-        while True:
-            self.sampler.circuit.additional_circuit = HadamardAndMeausre(0)
-            self.sampler.post_select = {0: 1}
-            v = self.sampler.get_state_vector()
-            correct = self._is_correct(v, self.n - 1, 1, self.n)
-            if correct:
-                return self._post_select(v, self.n - 1, 1, self.n)
+        return []
+
+    def get_samples(self, nshot):
+        return self.sampler.sample(nshot)
 
     def learn(self, coefficients: [float], device=None, filename="default-" + str(int(time.time())),
               reservation=False, n_shot=400, variance=0.25, iteration=200, lr_scheduler=UnitLRScheduler(0.1),
               allocator=None,
               dry=False):
         encoder = Encoder(self.n)
-        mapper = CoefficientMapper(self.n - 1, Encoder(self.n - 1), encoder)
+        mapper = self._get_mapper(encoder)
         probability, hadamard_probability = mapper.map(Coefficient(coefficients))
-        data_sampler = self.factory.generate_real_he()
+        if self.sampler is None:
+            data_sampler = self.factory.generate_real_he()
+        else:
+            data_sampler = self.sampler
         data_sampler.encoder = encoder
         if device is not None:
             from ibmq.base import DeviceFactory
@@ -85,6 +93,9 @@ class DataLearning:
                                LAYER_KEY: self.layer})
         self.sampler = data_sampler
         return self.get_state_vector()
+
+    def _get_mapper(self, encoder):
+        return None
 
     def _build_task(self, probability, another_probability, additional_circuit, encoder,
                     converter, data_sampler, factory, optimizer, variance, nshot):
@@ -138,6 +149,28 @@ class DataLearning:
             if array[i] != bit and amplitude != 0:
                 return False
         return True
+
+
+class DataLearning(DataLearningBase):
+    def get_state_vector(self):
+        while True:
+            self.sampler.circuit.additional_circuit = HadamardAndMeausre(0)
+            self.sampler.post_select = {0: 1}
+            v = self.sampler.get_state_vector()
+            correct = self._is_correct(v, self.n - 1, 1, self.n)
+            if correct:
+                return self._post_select(v, self.n - 1, 1, self.n)
+
+    def _get_mapper(self, encoder):
+        return CoefficientMapper(self.n - 1, Encoder(self.n - 1), encoder)
+
+
+class PositiveDataLearning(DataLearningBase):
+    def get_state_vector(self):
+        return self.sampler.get_state_vector()
+
+    def _get_mapper(self, encoder):
+        return CoefficientMapperAllpos(self.n, encoder)
 
 
 class CircuitAppender(Converter):

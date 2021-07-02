@@ -3,6 +3,43 @@ from svd.core.entity import Coefficient, Probability
 from svd.core.algorithm import walsh_hadamard_transform
 
 
+class CoefficientMapperAllpos:
+    def __init__(self, n, encoder: Encoder):
+        self.n = n
+        self.encoder = encoder
+
+    def map(self, coefficient: Coefficient) -> (Probability, Probability):
+        p1 = self._do_map(coefficient)
+        p2 = self._do_map_hadamard(coefficient)
+        return p1, p2
+
+    def _do_map(self, coefficient):
+        result = Probability(self.n + 0, self.encoder)
+        for num, value in enumerate(coefficient.data):
+            bitarray = self.encoder.encode(num)
+            num = self.encoder.decode(bitarray)
+            result.add(num, value * value)
+        return result
+
+    def _do_map_hadamard(self, coefficient):
+        state_map = {}
+        for num, value in enumerate(coefficient.data):
+            bit_array = self.encoder.encode(num)
+            num = self.encoder.decode(bit_array)
+            state_map[num] = value
+        state = []
+        for i in range(pow(2, self.n + 0)):
+            v = 0
+            if i in state_map:
+                v = state_map[i]
+            state.append(v)
+        vector = walsh_hadamard_transform(state) / pow(2, (self.n + 0) / 2)
+        result = Probability(self.n + 0, Encoder(self.n + 0))
+        for i, v in enumerate(vector):
+            result.add(i, v * v)
+        return result
+
+
 class CoefficientMapper:
     def __init__(self, n, encoder: Encoder, ancilla_encoder: Encoder):
         self.n = n
