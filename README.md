@@ -13,6 +13,12 @@ qiskit-ibmq-provider==0.11.1
 qiskit-ignis==0.5.1
 qiskit-terra==0.16.3
 ```
+# Code Readingについて
+- 多数のクラスで構成されるパッケージのため、Pycharm等の統合開発環境を使うのが良いかもしれません。
+- 実機まわりのコードは、下記が主な部分です。
+  - Projectのルート/ibmq/base.py
+  - Projectのルート/svd/core/sampler.py 中のQiskitSamplerのdo_sample
+  - Projectのルート/svd/learn_sampler.py 中のdo_learn
 
 # 導入方法
 ## ライブラリのインストール
@@ -30,6 +36,7 @@ ceaf7e4xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 # 実行方法
+
 まずは、svd/data_learning.pyを見てください。こちらは、
 3-qubit x 4層のParameterized Quantum Circuitを使って、[0,0,1,0]というデータを、状態の係数に埋め込むデモです。
 要素が2^2なのに、3-qubit用いるのは、AAE論文のCase2にあるように、ancilla qubitが必要なためです。
