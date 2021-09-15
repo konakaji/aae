@@ -15,10 +15,6 @@ qiskit-terra==0.16.3
 ```
 # Code Readingについて
 - 多数のクラスで構成されるパッケージのため、Pycharm等の統合開発環境を使うのが良いかもしれません。
-- 実機まわりのコードは、下記が主な部分です。
-  - Projectのルート/ibmq/base.py
-  - Projectのルート/svd/core/sampler.py 中のQiskitSamplerのdo_sample
-  - Projectのルート/svd/learn_sampler.py 中のdo_learn
 
 # 導入方法
 ## ライブラリのインストール
