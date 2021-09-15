@@ -32,7 +32,8 @@ def load():
 
 def learn():
     data_learning = DataLearning(n_qubit=3, layer=4)
-    data_learning.learn([0, 0, 1, 0], n_shot=N_SHOT, filename=DEMO_FILENAME, iteration=30)
+    result = data_learning.learn([0, 0, 1, 0], n_shot=N_SHOT, filename=DEMO_FILENAME, iteration=1)
+    print(result[0], result[1])
     print(data_learning.get_state_vector())
 
 
@@ -97,7 +98,5 @@ def normalize(state_array):
 
 
 if __name__ == '__main__':
-#    learn_positive()
-    load_positive()
-    # learn()
+    learn()
     # load()

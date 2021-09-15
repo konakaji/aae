@@ -47,6 +47,8 @@ def plot_mmd(start, prefix):
         for i, mmd in enumerate(mmds):
             xs.append(i)
             total_mmds.append((mmd + converted_mmds[i]) / 2)
+            if i == len(mmds) - 1:
+                print((mmd + converted_mmds[i]) / 2)
         p.plot(xs, mmds,
                label=r"$\mathcal{L}_{MMD}\left(\tilde{\psi}_k^2,|\langle k|U(\theta)|0\rangle^{\otimes 5}|^2\right)$")
         p.plot(xs, converted_mmds, label=r"$\mathcal{L}_{MMD}\left(\left(\sum_{\ell=0}^{31}"
@@ -58,7 +60,7 @@ def plot_mmd(start, prefix):
         p.ylabel("the value", fontsize=12)
         p.grid(which='major', color='black', linestyle='-')
         p.legend(fontsize=12)
-        p.savefig("{}/cost_{}.png".format(const.FINAL_FIGURE_PATH, start))
+        #p.savefig("{}/cost_{}.png".format(const.FINAL_FIGURE_PATH, start))
 
 
 def find_titles(hadamard):

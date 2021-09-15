@@ -92,7 +92,8 @@ class DataLearningBase:
                               {ENERGY_KEY: total_cost(data_sampler),
                                LAYER_KEY: self.layer})
         self.sampler = data_sampler
-        return self.get_state_vector()
+        cost = total_cost(data_sampler)
+        return self.get_state_vector(), cost
 
     def _get_mapper(self, encoder):
         return None
@@ -113,7 +114,7 @@ class DataLearningBase:
                                    [kl_cost, another_kl_cost, mmd_cost, another_mmd_cost])
 
         def total_cost(sampler):
-            return mmd_cost.value(sampler) + another_mmd_cost.value(data_sampler)
+            return mmd_cost.value(sampler) + another_mmd_cost.value(sampler)
 
         return AdamGradientOptimizationTask(data_sampler, factory, mmd_gradient_cost,
                                             task_watcher, nshot, optimizer), total_cost
