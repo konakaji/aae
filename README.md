@@ -13,6 +13,8 @@ qiskit-ibmq-provider==0.11.1
 qiskit-ignis==0.5.1
 qiskit-terra==0.16.3
 ```
+# Code Readingについて
+- 多数のクラスで構成されるパッケージのため、Pycharm等の統合開発環境を使うのが良いかもしれません。
 
 # 3. 導入方法
 ## ライブラリのインストール
@@ -28,7 +30,6 @@ pip install -r requirements.txt
 ```例)プロジェクトルート/ibmq/.ibmq_key
 ceaf7e4xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
-
 # 4. 実行方法
 ## 学習
 まずは、svd/data_learning_demo.pyを見てください。こちらは、
