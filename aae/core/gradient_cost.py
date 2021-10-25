@@ -1,8 +1,8 @@
-from svd.core.entity import Probability
-from svd.core.sampler import ParametrizedQiskitSampler, ParametrizedQiskitSamplerFactory, SamplerException
-from svd.core.circuit import QiskitCircuit
-from svd.core.encoder import Encoder
-from svd.core.entity import Sample
+from aae.core.entity import Probability
+from aae.core.sampler import ParametrizedQiskitSampler, ParametrizedQiskitSamplerFactory, SamplerException
+from aae.core.circuit import QiskitCircuit
+from aae.core.encoder import Encoder
+from aae.core.entity import Sample
 import numpy
 
 

@@ -1,7 +1,7 @@
 from unittest import TestCase
 import numpy as np
 from math import sqrt
-from svd.core.algorithm import walsh_hadamard_transform
+from aae.core.algorithm import walsh_hadamard_transform
 
 
 class Test(TestCase):

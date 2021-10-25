@@ -1,8 +1,8 @@
-from svd.core.optimizer import AdamOptimizer
-from svd.core.sampler import Parametrized, ParametrizedQiskitSampler, ParametrizedQiskitSamplerFactory
-from svd.core.gradient_cost import GradientCost
-from svd.core.exact_cost import Cost
-from svd.core.util import TaskWatcher
+from aae.core.optimizer import AdamOptimizer
+from aae.core.sampler import Parametrized, ParametrizedQiskitSampler, ParametrizedQiskitSamplerFactory
+from aae.core.gradient_cost import GradientCost
+from aae.core.exact_cost import Cost
+from aae.core.util import TaskWatcher
 
 
 class AdamOptimizationTask:

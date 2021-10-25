@@ -1,6 +1,6 @@
-from svd.core.entity import Sample
-from svd.core.exact_cost import Cost
-from svd.core.sampler import Sampler
+from aae.core.entity import Sample
+from aae.core.exact_cost import Cost
+from aae.core.sampler import Sampler
 
 
 class SampleCost(Cost):

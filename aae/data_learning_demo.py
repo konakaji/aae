@@ -1,10 +1,10 @@
 import warnings, math
-from svd.core.encoder import Encoder
+from aae.core.encoder import Encoder
 import qiskit
 
 warnings.filterwarnings('ignore')
 
-from svd.extention.data_learning import DataLearning, PositiveDataLearning
+from aae.extention.data_learning import DataLearning, PositiveDataLearning
 
 DEMO_FILENAME = "demo"
 N_SHOT = 200

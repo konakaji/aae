@@ -1,6 +1,6 @@
-from svd.core.entity import Sample
-from svd.core.encoder import Encoder
-from svd.core.circuit import QiskitCircuit, \
+from aae.core.entity import Sample
+from aae.core.encoder import Encoder
+from aae.core.circuit import QiskitCircuit, \
     RandomCircuit, TENCircuit, TENCircuitFactory, HECircuitFactory, plus_circuit, minus_circuit
 from ibmq.base import DeviceFactory
 import qiskit, random, json

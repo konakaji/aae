@@ -1,5 +1,5 @@
 from unittest import TestCase
-from svd.core.encoder import Encoder
+from aae.core.encoder import Encoder
 import numpy as np
 from qiskit.circuit import QuantumCircuit
 import qiskit

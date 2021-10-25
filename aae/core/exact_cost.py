@@ -1,6 +1,6 @@
-from svd.core.sampler import QiskitSampler, Converter
-from svd.core.entity import Probability
-from svd.core.encoder import Encoder
+from aae.core.sampler import QiskitSampler, Converter
+from aae.core.entity import Probability
+from aae.core.encoder import Encoder
 import math
 
 

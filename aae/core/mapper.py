@@ -1,6 +1,6 @@
-from svd.core.encoder import Encoder
-from svd.core.entity import Coefficient, Probability
-from svd.core.algorithm import walsh_hadamard_transform
+from aae.core.encoder import Encoder
+from aae.core.entity import Coefficient, Probability
+from aae.core.algorithm import walsh_hadamard_transform
 
 
 class CoefficientMapperPositive:
