@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
-from svd.core.entity import Probability
-from svd.core.exact_cost import Cost
-from svd.core.sampler import Sampler, Converter
+from aae.core.entity import Probability
+from aae.core.exact_cost import Cost
+from aae.core.sampler import Sampler, Converter
 import math
 
 
@@ -46,7 +46,7 @@ class TaskWatcher:
                 image_generator.generate(self.step, sampler)
         self.step = self.step + 1
 
-    def save(self, path):
+    def save_energy(self, path):
         with open(path, "w") as o:
             for record in self.records:
                 o.write("{}\t{}\t{}\n".format(record[0], record[1], record[2]))

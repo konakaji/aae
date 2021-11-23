@@ -1,10 +1,8 @@
-import warnings, math
+import math
 from aae.core.encoder import Encoder
 import qiskit
-
-warnings.filterwarnings('ignore')
-
-from aae.extention.data_learning import DataLearning, PositiveDataLearning
+from aae.extention.data_learning import DataLearning
+from aae.extention.aae import AAETrainingMethod
 
 DEMO_FILENAME = "demo"
 N_SHOT = 200
@@ -31,10 +29,12 @@ def load():
 
 def learn():
     data_learning = DataLearning(n_qubit=3, layer=4)
-    result = data_learning.learn([0, 0, 1, 0], n_shot=N_SHOT, filename=DEMO_FILENAME, iteration=1)
-    print(result[0], result[1])
-    print(data_learning.get_state_vector())
-
+    training_method = AAETrainingMethod(iteration=2)
+    result = data_learning.learn([0, 0, 1, 0], training_method=training_method)
+    print("save model")
+    data_learning.save_model("demo.model")
+    print("cost")
+    data_learning.save_cost_transition("cost.txt")
 
 def get_count(job_result):
     return job_result.get_counts().items()

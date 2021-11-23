@@ -1,8 +1,14 @@
 import numpy as np
+from abc import abstractmethod
 
 
 class Optimizer(object):
+    @abstractmethod
     def optimize(self, function, init_args):
+        pass
+
+    @abstractmethod
+    def do_optimize(self, gradient_function, init_args, func=None):
         pass
 
     @classmethod
@@ -32,6 +38,7 @@ class Optimizer(object):
 
 
 class LRScheduler:
+    @abstractmethod
     def value(self, iteration):
         return 0
 
@@ -74,7 +81,7 @@ class AdamOptimizer(Optimizer):
         self._m = np.zeros(1)
         self._v = np.zeros(1)
 
-    def do_optimize(self, gradient_function, init_args, func = None):
+    def do_optimize(self, gradient_function, init_args, func=None):
         params = np.array(init_args)
         params_new = params
         derivative = gradient_function(params)

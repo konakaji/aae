@@ -103,6 +103,7 @@ class RandomCircuit(QiskitCircuit):
                                       num_qubits=1, params=[]), [q_register[target_qubit]])
 
 
+
 class HECircuit(RandomCircuit):
     def __init__(self, parameters, directions, n_qubit, opposite_ladder=False):
         super().__init__(parameters, directions, n_qubit, opposite_ladder)

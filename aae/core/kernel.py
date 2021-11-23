@@ -1,7 +1,9 @@
 import math
+from abc import abstractmethod
 
 
 class Kernel:
+    @abstractmethod
     def value(self, x, y):
         return 0
 

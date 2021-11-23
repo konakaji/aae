@@ -3,10 +3,12 @@ from aae.core.sampler import ParametrizedQiskitSampler, ParametrizedQiskitSample
 from aae.core.circuit import QiskitCircuit
 from aae.core.encoder import Encoder
 from aae.core.entity import Sample
+from abc import abstractmethod
 import numpy
 
 
 class GradientCost:
+    @abstractmethod
     def sample_gradient(self, sampler: ParametrizedQiskitSampler,
                         factory: ParametrizedQiskitSamplerFactory, n_shot):
         return []

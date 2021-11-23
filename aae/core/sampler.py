@@ -152,23 +152,6 @@ class ParametrizedQiskitSampler(Parametrized, QiskitSampler):
         return "ParametrizedQiskitSampler"
 
 
-class SVDSampler(ParametrizedQiskitSampler):
-    def __init__(self, data_circuit: RandomCircuit, svd_circuit: TENCircuit):
-        super().__init__(svd_circuit, data_circuit.n_qubit)
-        self.data_circuit = data_circuit
-        self.n_qubit = data_circuit.n_qubit
-
-    def name(self):
-        return "CompositeSampler"
-
-    def _build_circuit(self):
-        q = qiskit.QuantumRegister(self.n_qubit)
-        qc = qiskit.QuantumCircuit(q, qiskit.ClassicalRegister(self.n_qubit))
-        qc, q_register = self.data_circuit.merge(qc, q)
-        qc, q_register = self.circuit.merge(qc, q_register)
-        return qc, q
-
-
 class ParametrizedQiskitSamplerFactory:
     def __init__(self, layer_count, n_qubit):
         self.layer_count = layer_count
@@ -206,7 +189,7 @@ class ParametrizedQiskitSamplerFactory:
                       "parameters": parameters,
                       "extra": extra,
                       "n_qubit": self.n_qubit}
-            f.write(json.dumps(result))
+            f.write(json.dumps(result, indent=2))
 
     def load(self, filename):
         with open(filename) as f:
@@ -224,57 +207,21 @@ class ParametrizedQiskitSamplerFactory:
         return ParametrizedQiskitSampler(circuit, self.n_qubit)
 
 
-class SVDQiskitSamplerFactory(ParametrizedQiskitSamplerFactory):
-    def __init__(self, layer_count, data_circuit: RandomCircuit):
-        super().__init__(layer_count, data_circuit.n_qubit)
-        self.data_circuit = data_circuit
-
-    def _create_instance(self, circuit: TENCircuit):
-        return SVDSampler(self.data_circuit, circuit)
-
-    def save(self, filename, sampler: SVDSampler, extra={}):
-        with open(filename, "w") as f:
-            directions = []
-            parameters = []
-            for i, p in enumerate(sampler.circuit.parameters):
-                directions.append(sampler.circuit.directions[i])
-                parameters.append(p)
-            data_directions = []
-            data_parameters = []
-            for i, p in enumerate(sampler.data_circuit.parameters):
-                data_directions.append(sampler.circuit.directions[i])
-                data_parameters.append(p)
-            result = {"name": sampler.name(),
-                      "svd-circuit": {
-                          "directions": directions,
-                          "parameters": parameters,
-                          "extra": extra,
-                          "n-a": sampler.circuit.n_a,
-                          "n-qubit": sampler.circuit.n_qubit
-                      }, "data-circuit": {
-                    "directions": data_directions,
-                    "data_parameters": data_parameters,
-                    "n-qubit": sampler.data_circuit.n_qubit,
-                    "extra": extra
-                }}
-            f.write(json.dumps(result))
-
-    def load(self, filename):
-        with open(filename) as f:
-            map = json.loads(f.read())
-            c = map["svd-circuit"]
-            directions = c["directions"]
-            parameters = c["parameters"]
-            n_a = c["n-a"]
-            if "layer_count" in c["extra"]:
-                self.layer_count = int(c["extra"]["layer_count"])
-            circuit = TENCircuitFactory.do_generate(parameters, directions, self.n_qubit, n_a, n_a)
-            return self._create_instance(circuit)
-
-
 class Converter:
     def convert(self, sampler: Sampler):
         return sampler
 
     def revoke(self, sampler: Sampler):
         return sampler
+
+
+class CircuitAppender(Converter):
+    def __init__(self, circuit: QiskitCircuit):
+        self.circuit = circuit
+
+    def convert(self, sampler: ParametrizedQiskitSampler):
+        sampler.circuit.additional_circuit = self.circuit
+        return sampler
+
+    def revoke(self, sampler: Sampler):
+        sampler.circuit.additional_circuit = None
