@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from aae.core.task import GradientOptimizationTask
 from qiskit import QuantumCircuit, QuantumRegister
 
 
@@ -7,7 +8,7 @@ class TrainingMethod(ABC):
         self.task_watcher = None
 
     @abstractmethod
-    def build(self, data_sampler, coefficients, n_qubit, factory):
+    def build(self, data_sampler, coefficients, n_qubit, factory) -> GradientOptimizationTask:
         pass
 
     @abstractmethod

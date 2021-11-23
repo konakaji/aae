@@ -118,6 +118,8 @@ class AAELoadingMethod(LoadingMethod):
             v = sampler.get_state_vector()
             correct = self._is_correct(v, sampler.n_qubit - 1, 1, sampler.n_qubit)
             if correct:
+                sampler.post_select = {}
+                sampler.circuit.additional_circuit = None
                 return self._post_select(v, sampler.n_qubit - 1, 1, sampler.n_qubit)
 
     @classmethod

@@ -1,16 +1,16 @@
 import math
-from aae.core.encoder import Encoder
 import qiskit
 from aae.extention.data_learning import DataLearning
-from aae.extention.aae import AAETrainingMethod
+from aae.extention.aae import AAETrainingMethod, PositiveAAETrainingMethod, AAEUtil
 
 DEMO_FILENAME = "demo"
 N_SHOT = 200
 
 
 def load():
+    print("----load----")
     data_learning = DataLearning(n_qubit=3, layer=4)
-    data_learning.load(DEMO_FILENAME)
+    data_learning.load("demo.model")
     qr = qiskit.QuantumRegister(3)
     cr = qiskit.ClassicalRegister(3)
     qc = qiskit.QuantumCircuit(qr, cr)
@@ -21,72 +21,42 @@ def load():
     qc.measure(1, 1)
     qc.measure(2, 2)
     simulator = qiskit.Aer.get_backend("qasm_simulator")
-    future = data_learning.execute_with_post_selection(qc, simulator, shots=N_SHOT)
+    future = AAEUtil.execute_with_post_selection(qc, simulator, shots=N_SHOT, n=3)
     samples = future.get()
     for sample in samples:
         print(sample)
 
 
 def learn():
+    print("----learn----")
     data_learning = DataLearning(n_qubit=3, layer=4)
-    training_method = AAETrainingMethod(iteration=2)
+    training_method = AAETrainingMethod(iteration=20)
     result = data_learning.learn([0, 0, 1, 0], training_method=training_method)
-    print("save model")
     data_learning.save_model("demo.model")
-    print("cost")
     data_learning.save_cost_transition("cost.txt")
+
 
 def get_count(job_result):
     return job_result.get_counts().items()
 
 
 def load_positive():
+    print("----load positive----")
     n_qubit = 3
-    n_shot = 8024
-    data_learning = PositiveDataLearning(n_qubit=n_qubit, layer=2)
-    data_learning.load("simulator", device="ibmq_rome")
-    data_learning.get_samples(8024).get()
-    values = normalize([0.1, 0.3, 0.4, 0.2, 0.4, 0.5, 0.3, 0.2])
-    future = data_learning.get_samples(8024)
-    future.listener = get_count
-    vector = [0] * pow(2, n_qubit)
-    encoder = Encoder(n_qubit)
-    for bit_string, count in future.get():
-        index = int(encoder.decode(encoder.to_bitarray(bit_string)))
-        vector[index] = math.sqrt(count / n_shot)
-    print(fidelity(values, vector))
+    data_learning = DataLearning(n_qubit=n_qubit, layer=2)
+    data_learning.load("positive.model")
+    print(data_learning.get_state_vector())
 
 
 def learn_positive():
+    print("----learn positive----")
     n_qubit = 3
-    data_learning = PositiveDataLearning(n_qubit=n_qubit, layer=2)
-    encoder = Encoder(n_qubit)
-    n_shot = 8024
-    values = normalize([0.1, 0.3, 0.4, 0.2, 0.4, 0.5, 0.3, 0.2])
-    # values = normalize([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8])
-    data_learning.load("simulator")
-    data_learning.learn(values, device="ibmq_rome", n_shot=N_SHOT, filename="rome", iteration=5)
-
-
-#    data_learning.learn(values, n_shot=N_SHOT, filename="simulator", iteration=50)
-# future = data_learning.get_samples(n_shot)
-# future.listener = get_count
-# vector = [0] * pow(2, n_qubit)
-# for bit_string, count in future.get():
-#     index = int(encoder.decode(encoder.to_bitarray(bit_string)))
-#     vector[index] = math.sqrt(count / n_shot)
-# print(fidelity(values, data_learning.get_state_vector()))
-# print(fidelity(values, vector))
-# print(fidelity(vector, data_learning.get_state_vector()))
-
-
-def fidelity(values, state_vector):
-    print(values)
-    print(state_vector)
-    result = 0
-    for i, v in enumerate(values):
-        result = result + state_vector[i] * v
-    return result * result
+    training_method = PositiveAAETrainingMethod(iteration=20)
+    data_learning = DataLearning(n_qubit=n_qubit, layer=2)
+    result = data_learning.learn(normalize([0.1, 0.3, 0.4, 0.2, 0.4, 0.5, 0.3, 0.2]), training_method=training_method)
+    print(result)
+    data_learning.save_model("positive.model")
+    data_learning.save_cost_transition("positive.txt")
 
 
 def normalize(state_array):
@@ -98,4 +68,6 @@ def normalize(state_array):
 
 if __name__ == '__main__':
     learn()
-    # load()
+    load()
+    learn_positive()
+    load_positive()

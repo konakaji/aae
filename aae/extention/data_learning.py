@@ -26,6 +26,7 @@ class DataLearning:
 
     def load(self, filename, device=None, allocator=None, reservation=False):
         self.sampler = self.factory.load(filename)
+        self.load_method = Context.get(self.factory.get_extra(filename)[NAME_KEY])
         if device is not None:
             from ibmq.base import DeviceFactory
             if allocator is None:
@@ -61,7 +62,7 @@ class DataLearning:
                            LAYER_KEY: self.layer, NAME_KEY: name})
 
     def save_cost_transition(self, path):
-        self.training_method.task_watcher.save(path)
+        self.training_method.task_watcher.save_energy(path)
 
     def _get_data_sampler(self):
         if self.sampler is None:

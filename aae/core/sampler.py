@@ -200,6 +200,11 @@ class ParametrizedQiskitSamplerFactory:
             circuit = HECircuitFactory.do_generate(parameters, directions, n_qubit)
             return self._create_instance(circuit)
 
+    def get_extra(self, filename):
+        with open(filename) as f:
+            map = json.loads(f.read())
+            return map["extra"]
+
     def create_instance(self, circuit):
         return ParametrizedQiskitSampler(circuit, self.n_qubit)
 
