@@ -31,6 +31,7 @@ class AAETrainingMethodBase(TrainingMethod):
         else:
             self.lr_scheduler = lr_scheduler
         # later set
+        self.real = True
         self.cost = None
 
     def build(self, data_sampler, coefficients, n, factory):

@@ -6,6 +6,7 @@ from qiskit import QuantumCircuit, QuantumRegister
 class TrainingMethod(ABC):
     def __init__(self):
         self.task_watcher = None
+        self.real = True
 
     @abstractmethod
     def build(self, data_sampler, coefficients, n_qubit, factory) -> GradientOptimizationTask:

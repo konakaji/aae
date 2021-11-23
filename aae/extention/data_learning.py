@@ -38,7 +38,7 @@ class DataLearning:
 
     def learn(self, coefficients: [float], device=None,
               reservation=False, allocator=None, training_method: TrainingMethod = None):
-        data_sampler = self._get_data_sampler()
+        data_sampler = self._get_data_sampler(training_method.real)
         self._set_device(data_sampler, allocator, device, reservation)
         data_sampler.encoder = Encoder(self.n)
         optimization = training_method.build(data_sampler, coefficients, self.n, self.factory)
@@ -64,9 +64,12 @@ class DataLearning:
     def save_cost_transition(self, path):
         self.training_method.task_watcher.save_energy(path)
 
-    def _get_data_sampler(self):
+    def _get_data_sampler(self, real):
         if self.sampler is None:
-            data_sampler = self.factory.generate_real_he()
+            if real:
+                data_sampler = self.factory.generate_real_he()
+            else:
+                data_sampler = self.factory.generate_he()
         else:
             data_sampler = self.sampler
         return data_sampler
