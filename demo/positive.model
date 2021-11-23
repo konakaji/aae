@@ -1,0 +1,25 @@
+{
+  "name": "ParametrizedQiskitSampler",
+  "directions": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "parameters": [
+    1.6651211625567786,
+    1.1425595437412153,
+    1.4539595965096561,
+    0.1946302767610708,
+    0.3667278277651247,
+    6.838523342284085
+  ],
+  "extra": {
+    "final-energy": 0.03419837615620701,
+    "layer": 2,
+    "training-method": "POSITIVE_AAE"
+  },
+  "n_qubit": 3
+}
