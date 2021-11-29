@@ -48,9 +48,10 @@ class GradientOptimizationTask:
         n_shot = self.n_shot
 
         def function(parameters):
-            self.task_watcher.record(sampler)
             sampler.copy(parameters)
-            return self.cost.sample_gradient(sampler, factory, n_shot)
+            grad = self.cost.sample_gradient(sampler, factory, n_shot)
+            self.task_watcher.record(sampler)
+            return grad
 
         return function
 
