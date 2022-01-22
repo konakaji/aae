@@ -68,7 +68,6 @@ setuptools.setup(
         "Quandl==3.6.0",
         "requests==2.25.1",
         "requests-ntlm==1.1.0",
-        "retworkx==0.7.2",
         "scikit-learn==0.24.1",
         "scipy==1.6.0",
         "six==1.15.0",
