@@ -59,7 +59,7 @@ setuptools.setup(
         "python-constraint==1.4.0",
         "python-dateutil==2.8.1",
         "pytz==2021.1",
-        "qiskit==0.23.4",
+        "qiskit==0.34.1",
         "qiskit-aer==0.7.3",
         "qiskit-aqua==0.8.1",
         "qiskit-ibmq-provider==0.11.1",
@@ -77,7 +77,7 @@ setuptools.setup(
         "threadpoolctl==2.1.0",
         "urllib3==1.26.3",
         "websockets==8.1",
-        "qwrapper==0.0.6 @ git+ssh://git@github.com/konakaji/qwrapper.git"
+        "qwrapper==0.0.6 @ git+ssh://git@github.com/konakaji/qwrapper.git#egg=repo"
     ],
     python_requires='>=3.7',
 )
