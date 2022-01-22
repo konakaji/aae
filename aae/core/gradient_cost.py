@@ -1,6 +1,6 @@
 from aae.core.entity import Probability
-from aae.core.sampler import ParametrizedQiskitSampler, ParametrizedQiskitSamplerFactory, SamplerException
-from aae.core.circuit import QiskitCircuit
+from aae.core.sampler import ParametrizedDefaultSampler, ParametrizedQiskitSamplerFactory, SamplerException
+from aae.core.circuit import Gates
 from aae.core.encoder import Encoder
 from aae.core.entity import Sample
 from abc import abstractmethod
@@ -9,7 +9,7 @@ import numpy
 
 class GradientCost:
     @abstractmethod
-    def sample_gradient(self, sampler: ParametrizedQiskitSampler,
+    def sample_gradient(self, sampler: ParametrizedDefaultSampler,
                         factory: ParametrizedQiskitSamplerFactory, n_shot):
         return []
 
@@ -26,11 +26,11 @@ class MMDGradientCost(GradientCost):
         self.cutoff = 0
         self.max_retry = 5
 
-    def sample_gradient(self, sampler: ParametrizedQiskitSampler,
+    def sample_gradient(self, sampler: ParametrizedDefaultSampler,
                         factory: ParametrizedQiskitSamplerFactory, n_shot):
         return self.do_sample_gradient(sampler, factory, n_shot, self.probability)
 
-    def do_sample_gradient(self, sampler: ParametrizedQiskitSampler,
+    def do_sample_gradient(self, sampler: ParametrizedDefaultSampler,
                            factory: ParametrizedQiskitSamplerFactory, n_shot, probability: Probability, retry=0):
         if retry == self.max_retry:
             raise InvalidStateException("retry limit exceed")
@@ -65,27 +65,27 @@ class MMDGradientCost(GradientCost):
             result = result + self.kernel(pls[i], s)
             result = result - self.kernel(mis[i], s)
             for j in range(self.cutoff_values(pls[i])[0], self.cutoff_values(pls[i])[1]):
-                result = result - probability.get(j) * self.kernel(pls[i], Sample(self.encoder.encode(j)))
+                result = result - probability.get(j) * self.kernel(pls[i], self.encoder.encode(j))
             for j in range(self.cutoff_values(mis[i])[0], self.cutoff_values(mis[i])[1]):
-                result = result + probability.get(j) * self.kernel(mis[i], Sample(self.encoder.encode(j)))
+                result = result + probability.get(j) * self.kernel(mis[i], self.encoder.encode(j))
         return result
 
     def kernel(self, x, y):
         if self.custom_kernel is not None:
-            return self.custom_kernel(self.encoder.decode(x.data), self.encoder.decode(y.data))
+            return self.custom_kernel(self.encoder.decode(x), self.encoder.decode(y))
         if x == y:
             return 1
         else:
             return 0
 
     def cutoff_values(self, x):
-        decoded = self.encoder.decode(x.data)
+        decoded = self.encoder.decode(x)
         return max(decoded - self.cutoff, 0), min(decoded + self.cutoff + 1, pow(2, self.probability.N))
 
 
 class MultipleMMDGradientCost(MMDGradientCost):
     def __init__(self, probability: Probability,
-                 another_probability: Probability, another_circuit: QiskitCircuit, encoder: Encoder, lambda_1=0.5,
+                 another_probability: Probability, another_circuit: Gates, encoder: Encoder, lambda_1=0.5,
                  lambda_2=0.5):
         self.probability = probability
         self.another_probability = another_probability
@@ -94,7 +94,7 @@ class MultipleMMDGradientCost(MMDGradientCost):
         self.lambda_2 = lambda_2
         super().__init__(probability, encoder)
 
-    def sample_gradient(self, sampler: ParametrizedQiskitSampler,
+    def sample_gradient(self, sampler: ParametrizedDefaultSampler,
                         factory: ParametrizedQiskitSamplerFactory, n_shot):
         sampler.circuit.additional_circuit = None
         base_gradient = super().do_sample_gradient(sampler, factory, n_shot, self.probability)

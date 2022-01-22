@@ -1,8 +1,8 @@
 from aae.core.encoder import Encoder
-from aae.core.sampler import ParametrizedQiskitSamplerFactory
+from aae.core.sampler import ParametrizedQiskitSamplerFactory, QISKIT, QULACS
 from aae.extention.base import TrainingMethod
 from ibmq.allocator import NaiveQubitAllocator
-from qiskit import QuantumCircuit, QuantumRegister
+from qwrapper.circuit import QuantumCircuit
 from aae.extention.context import Context
 
 ENERGY_KEY = "final-energy"
@@ -11,11 +11,11 @@ NAME_KEY = "training-method"
 
 
 class DataLearning:
-    def __init__(self, n_qubit: int, layer: int, factory=None):
+    def __init__(self, n_qubit: int, layer: int, factory=None, type=QISKIT):
         self.n = n_qubit
         self.layer = layer
         if factory is None:
-            self.factory = ParametrizedQiskitSamplerFactory(self.layer, self.n)
+            self.factory = ParametrizedQiskitSamplerFactory(self.layer, self.n, type)
         else:
             self.factory = factory
         self.sampler = None
@@ -48,8 +48,8 @@ class DataLearning:
         self.load_method = Context.get(training_method.get_name())
         return self.get_state_vector()
 
-    def add_data_gates(self, q_circuit: QuantumCircuit, q_register: QuantumRegister):
-        return self.load_method.add_data_gates(self.sampler, q_circuit, q_register)
+    def add_data_gates(self, q_circuit: QuantumCircuit):
+        return self.load_method.add_data_gates(self.sampler, q_circuit)
 
     def get_state_vector(self):
         return self.load_method.get_state_vector(self.sampler)

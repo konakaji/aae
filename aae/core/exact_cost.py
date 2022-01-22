@@ -1,4 +1,4 @@
-from aae.core.sampler import QiskitSampler, Converter
+from aae.core.sampler import DefaultSampler, Converter
 from aae.core.entity import Probability
 from aae.core.encoder import Encoder
 from abc import abstractmethod
@@ -7,7 +7,7 @@ import math
 
 class Cost:
     @abstractmethod
-    def value(self, sampler: QiskitSampler):
+    def value(self, sampler: DefaultSampler):
         return 0
 
     @abstractmethod
@@ -22,7 +22,7 @@ class MMDCost(Cost):
         self.converter = converter
         self.custom_kernel = None
 
-    def value(self, sampler: QiskitSampler):
+    def value(self, sampler: DefaultSampler):
         if self.converter is not None:
             sampler = self.converter.convert(sampler)
         result = 0
@@ -57,7 +57,7 @@ class KLCost(Cost):
         self.encoder = encoder
         self.converter = converter
 
-    def value(self, sampler: QiskitSampler):
+    def value(self, sampler: DefaultSampler):
         if self.converter is not None:
             sampler = self.converter.convert(sampler)
         qs = sampler.exact_probabilities()

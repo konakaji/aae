@@ -23,7 +23,7 @@ class TrainingMethod(ABC):
 
 class LoadingMethod(ABC):
     @abstractmethod
-    def add_data_gates(self, sampler, q_circuit: QuantumCircuit, q_register: QuantumRegister):
+    def add_data_gates(self, sampler, q_circuit: QuantumCircuit):
         pass
 
     @abstractmethod
@@ -32,8 +32,8 @@ class LoadingMethod(ABC):
 
 
 class DefaultLoadingMethod(LoadingMethod):
-    def add_data_gates(self, sampler, q_circuit: QuantumCircuit, q_register: QuantumRegister):
-        c, q_register = sampler.circuit.merge(q_circuit, q_register)
+    def add_data_gates(self, sampler, q_circuit: QuantumCircuit):
+        c, q_register = sampler.circuit.merge(q_circuit)
         return c
 
     def get_state_vector(self, sampler):
