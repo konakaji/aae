@@ -30,7 +30,6 @@ setuptools.setup(
         "decorator==4.4.2",
         "dill==0.3.3",
         "dlx==1.0.4",
-        "docplex==2.20.204",
         "fastdtw==0.3.4",
         "fastjsonschema==2.15.0",
         "h5py==3.1.0",
