@@ -1,53 +1,53 @@
+from abc import ABC, abstractmethod
+from aae.core.exception import IllegalArgumentException
 from aae.core.entity import Sample
 from aae.core.encoder import Encoder
-from aae.core.circuit import QiskitCircuit, \
-    RandomCircuit, TENCircuit, TENCircuitFactory, HECircuitFactory, plus_circuit, minus_circuit
+from aae.core.circuit import QISKIT, QULACS, Gates, \
+    RandomGates, TENCircuitFactory, HECircuitFactory, plus_circuit, minus_circuit
 from ibmq.base import DeviceFactory
-import qiskit, random, json
+from qwrapper.circuit import QiskitCircuit, QulacsCircuit, QWrapper
+import json
 
 
-class Sampler:
+class Sampler(ABC):
+    @abstractmethod
     def sample(self, n_shot) -> [Sample]:
-        return []
+        pass
 
+    @abstractmethod
     def exact_probabilities(self):
-        return []
-
-    def exact_partial_probabilities(self, partial_qubit):
-        return []
+        pass
 
 
-class SampleJobFuture:
-    def __init__(self, job, listener):
-        self.job = job
-        self.listener = listener
-        self.result = None
-
-    def get(self):
-        if self.result is not None:
-            return self.result
-        try:
-            job_result = self.job.result()
-
-        except qiskit.exceptions.QiskitError as e:
-            raise SamplerException(e)
-        self.result = self.listener(job_result)
-        return self.result
+# class SampleJobFuture:
+#     def __init__(self, job, listener):
+#         self.job = job
+#         self.listener = listener
+#         self.result = None
+#
+#     def get(self):
+#         if self.result is not None:
+#             return self.result
+#         try:
+#             job_result = self.job.result()
+#
+#         except qiskit.exceptions.QiskitError as e:
+#             raise SamplerException(e)
+#         self.result = self.listener(job_result)
+#         return self.result
 
 
 class SamplerException(Exception):
     pass
 
 
-class QiskitSampler(Sampler):
-    def __init__(self, circuit: QiskitCircuit, n_qubit):
+class DefaultSampler(Sampler):
+    def __init__(self, circuit: Gates, n_qubit, type=QISKIT):
         self.circuit = circuit
         self.encoder = Encoder(n_qubit)
+        self.type = type
         self.n_qubit = n_qubit
-        self.simulator = qiskit.Aer.get_backend("qasm_simulator")
-        self.state_simulator = qiskit.Aer.get_backend("statevector_simulator")
         self.factory: DeviceFactory = None
-        self.sync = False
         self.post_select = {}
         self.max_retry = 5
 
@@ -55,63 +55,36 @@ class QiskitSampler(Sampler):
         if self.factory is not None:
             self.simulator = self.factory.get_backend()
 
-    def draw(self, output='mpl', style=None, registers=None):
-        qc, q_register = self._build_circuit()
-        if registers is None:
-            registers = self._all_register()
-        qc.measure(registers, registers)
-        qc.draw(output=output, fold=-1, style=style, plot_barriers=False)
+    def draw(self, output='mpl'):
+        qc = self._build_circuit()
+        qc.draw(output=output)
 
-    def sample(self, n_shot) -> SampleJobFuture:
-        if len(self.post_select) > 0:
-            raise NotImplementedError()
-        return self.do_sample(n_shot)
-
-    def do_sample(self, n_shot):
-        qc, q = self._build_circuit()
-        qc.measure(self._all_register(), self._all_register())
-
-        def listener(result):
-            samples = []
-            for bitstring, count in result.get_counts().items():
-                for i in range(count):
-                    bitarray = self.encoder.to_bitarray(bitstring)
-                    samples.append(Sample(bitarray))
-            random.shuffle(samples)
-            return samples
-
-        job = qiskit.execute(qc, self.simulator, shots=n_shot,
-                             initial_layout=self.circuit.layout)
-        future = SampleJobFuture(job, listener)
-        return future
+    def sample(self, n_shot):
+        qc = self._build_circuit()
+        return qc.get_async_samples(n_shot)
 
     def exact_probabilities(self):
         results = {}
         partial_qubits = self.n_qubit - len(self.post_select)
         partial_encoder = Encoder(partial_qubits)
-        valid = False
-        while not valid:
-            statevector = self.get_state_vector()
-            valid = True
-            for num, c in enumerate(statevector):
-                bit_array = self.encoder.encode(num)
-                for k, v in sorted(self.post_select.items(), key=lambda a: a[0], reverse=True):
-                    if bit_array.pop(self.n_qubit - k - 1) != v and abs(c * c.conjugate()) > 0:
-                        valid = False
-                if not valid:
-                    continue
-                key = partial_encoder.decode(bit_array)
-                results[key] = abs(c * c.conjugate())
+        qc = self._build_circuit()
+        for k, v in self.post_select.items():
+            qc.post_select(k, v)
+        statevector = qc.get_state_vector()
+        for num, c in enumerate(statevector):
+            bit_array = self.encoder.encode(num)
+            for k, v in sorted(self.post_select.items(), key=lambda a: a[0], reverse=True):
+                bit_array.pop(self.n_qubit - k - 1)
+            key = partial_encoder.decode(bit_array)
+            results[key] = abs(c * c.conjugate())
         rs = []
         for _, p in sorted(results.items(), key=lambda a: a[0]):
             rs.append(p)
         return rs
 
     def get_state_vector(self):
-        qc, q = self._build_circuit()
-        job = qiskit.execute(qc, self.state_simulator)
-        statevector = job.result().get_statevector(qc)
-        return statevector
+        qc = self._build_circuit()
+        return qc.get_state_vector()
 
     def add_post_select(self, qubit_index, qubit_value):
         self.post_select[qubit_index] = qubit_value
@@ -122,24 +95,30 @@ class QiskitSampler(Sampler):
             r.append(i)
         return r
 
-    def _build_circuit(self):
-        q = qiskit.QuantumRegister(self.n_qubit)
-        qc = qiskit.QuantumCircuit(q, qiskit.ClassicalRegister(self.n_qubit))
-        qc, q_register = self.circuit.merge(qc, q)
-        return qc, q
+    def _build_circuit(self) -> QWrapper:
+        if self.type == QISKIT:
+            qc = QiskitCircuit(self.n_qubit)
+        elif self.type == QULACS:
+            qc = QulacsCircuit(self.n_qubit)
+        else:
+            raise IllegalArgumentException("the type {} does not exist.".format(self.type))
+        self.circuit.merge(qc)
+        return qc
 
 
-class Parametrized(Sampler):
+class Parametrized(ABC):
+    @abstractmethod
     def get_parameters(self):
         return []
 
+    @abstractmethod
     def copy(self, parameters):
         pass
 
 
-class ParametrizedQiskitSampler(Parametrized, QiskitSampler):
-    def __init__(self, circuit: RandomCircuit, n_qubit):
-        super().__init__(circuit, n_qubit)
+class ParametrizedDefaultSampler(Parametrized, DefaultSampler):
+    def __init__(self, circuit: RandomGates, n_qubit, type=QISKIT):
+        super().__init__(circuit, n_qubit, type)
         self.circuit = circuit
 
     def get_parameters(self):
@@ -153,17 +132,18 @@ class ParametrizedQiskitSampler(Parametrized, QiskitSampler):
 
 
 class ParametrizedQiskitSamplerFactory:
-    def __init__(self, layer_count, n_qubit):
+    def __init__(self, layer_count, n_qubit, type):
         self.layer_count = layer_count
         self.n_qubit = n_qubit
+        self.type = type
 
-    def plus_sampler(self, sampler: ParametrizedQiskitSampler, index):
+    def plus_sampler(self, sampler: ParametrizedDefaultSampler, index):
         circuit = plus_circuit(sampler.circuit, index)
-        return ParametrizedQiskitSampler(circuit, circuit.n_qubit)
+        return ParametrizedDefaultSampler(circuit, circuit.n_qubit, self.type)
 
-    def minus_sampler(self, sampler: ParametrizedQiskitSampler, index):
+    def minus_sampler(self, sampler: ParametrizedDefaultSampler, index):
         circuit = minus_circuit(sampler.circuit, index)
-        return ParametrizedQiskitSampler(circuit, circuit.n_qubit)
+        return ParametrizedDefaultSampler(circuit, circuit.n_qubit, self.type)
 
     def generate_he(self):
         circuit = HECircuitFactory.generate(self.layer_count, self.n_qubit)
@@ -177,7 +157,7 @@ class ParametrizedQiskitSamplerFactory:
         circuit = TENCircuitFactory.generate(self.layer_count, self.n_qubit, n_a, n_b)
         return self._create_instance(circuit)
 
-    def save(self, filename, sampler: ParametrizedQiskitSampler, extra: {}):
+    def save(self, filename, sampler: ParametrizedDefaultSampler, extra: {}):
         with open(filename, "w") as f:
             directions = []
             parameters = []
@@ -197,8 +177,9 @@ class ParametrizedQiskitSamplerFactory:
             directions = map["directions"]
             parameters = map["parameters"]
             n_qubit = map["n_qubit"]
+            type = map["type"]
             circuit = HECircuitFactory.do_generate(parameters, directions, n_qubit)
-            return self._create_instance(circuit)
+            return self._create_instance(circuit, type)
 
     def get_extra(self, filename):
         with open(filename) as f:
@@ -206,10 +187,12 @@ class ParametrizedQiskitSamplerFactory:
             return map["extra"]
 
     def create_instance(self, circuit):
-        return ParametrizedQiskitSampler(circuit, self.n_qubit)
+        return ParametrizedDefaultSampler(circuit, self.n_qubit, self.type)
 
-    def _create_instance(self, circuit):
-        return ParametrizedQiskitSampler(circuit, self.n_qubit)
+    def _create_instance(self, circuit, type=None):
+        if type is None:
+            type = self.type
+        return ParametrizedDefaultSampler(circuit, self.n_qubit, type)
 
 
 class Converter:
@@ -221,10 +204,10 @@ class Converter:
 
 
 class CircuitAppender(Converter):
-    def __init__(self, circuit: QiskitCircuit):
+    def __init__(self, circuit: Gates):
         self.circuit = circuit
 
-    def convert(self, sampler: ParametrizedQiskitSampler):
+    def convert(self, sampler: ParametrizedDefaultSampler):
         sampler.circuit.additional_circuit = self.circuit
         return sampler
 

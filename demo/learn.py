@@ -23,15 +23,14 @@ def load():
     simulator = qiskit.Aer.get_backend("qasm_simulator")
     future = AAEUtil.execute_with_post_selection(qc, simulator, shots=N_SHOT, n=3)
     samples = future.get()
-    for sample in samples:
-        print(sample)
 
 
 def learn():
     print("----learn----")
-    data_learning = DataLearning(n_qubit=3, layer=4)
+    data_learning = DataLearning(n_qubit=3, layer=4, type="qulacs")
     training_method = AAETrainingMethod(iteration=20)
     result = data_learning.learn([0, 0, 1, 0], training_method=training_method)
+    print(data_learning.get_state_vector())
     data_learning.save_model("demo.model")
     data_learning.save_cost_transition("cost.txt")
 
@@ -68,6 +67,6 @@ def normalize(state_array):
 
 if __name__ == '__main__':
     learn()
-    load()
-    learn_positive()
-    load_positive()
+    # load()
+    # learn_positive()
+    # load_positive()

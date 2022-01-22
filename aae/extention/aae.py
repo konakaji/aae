@@ -6,7 +6,7 @@ from aae.core.mapper import CoefficientMapper, CoefficientMapperPositive
 from aae.core.optimizer import *
 from aae.core.sampler import *
 from aae.core.task import GradientOptimizationTask
-from aae.core.util import TaskWatcher, ImageGenrator
+from aae.core.monitor import ImageGenrator, TaskWatcher
 from aae.extention.base import TrainingMethod, LoadingMethod
 from qiskit import QuantumRegister, QuantumCircuit
 
@@ -35,7 +35,7 @@ class AAETrainingMethodBase(TrainingMethod):
         self.cost = None
 
     def build(self, data_sampler, coefficients, n, factory):
-        additional_circuit = AllHadamardCircuit(n)
+        additional_circuit = AllHadamardGates(n)
         optimizer = AdamOptimizer(self.lr_scheduler, maxiter=self.iteration)
         converter = CircuitAppender(additional_circuit)
         probability, hadamard_probability = self.get_mapper(data_sampler, n).map(Coefficient(coefficients))
@@ -108,25 +108,24 @@ class AAETrainingMethod(AAETrainingMethodBase):
 
 
 class AAELoadingMethod(LoadingMethod):
-    def add_data_gates(self, sampler, q_circuit: QuantumCircuit, q_register: QuantumRegister):
-        c, q_register = sampler.circuit.merge(q_circuit, q_register)
-        return HadamardAndMeausre(0).merge(q_circuit, q_register)[0]
+    def add_data_gates(self, sampler, q_circuit: QuantumCircuit):
+        c = sampler.circuit.merge(q_circuit)
+        return Hadamard(0).merge(c)
 
     def get_state_vector(self, sampler):
-        while True:
-            sampler.circuit.additional_circuit = HadamardAndMeausre(0)
-            sampler.post_select = {0: 1}
-            v = sampler.get_state_vector()
-            correct = self._is_correct(v, sampler.n_qubit - 1, 1, sampler.n_qubit)
-            if correct:
-                sampler.post_select = {}
-                sampler.circuit.additional_circuit = None
-                return self._post_select(v, sampler.n_qubit - 1, 1, sampler.n_qubit)
+        sampler.circuit.additional_circuit = Hadamard(0)
+        sampler.post_select = {0: 1}
+        v = sampler.get_state_vector()
+        sampler.post_select = {}
+        sampler.circuit.additional_circuit = None
+        v = self._post_select(v, sampler.n_qubit - 1, 1, sampler.n_qubit)
+        return v
 
     @classmethod
     def _post_select(cls, state_vector, i, bit, n_qubit):
         results = []
         encoder = Encoder(n_qubit)
+        norm = 0
         for num, amplitude in enumerate(state_vector):
             array = encoder.encode(num)
             if array[i] != bit:
@@ -137,7 +136,12 @@ class AAELoadingMethod(LoadingMethod):
                     continue
                 new_array.append(a)
             results.append(amplitude)
-        return results
+            norm = norm + amplitude * amplitude.conjugate()
+        finals = []
+        norm = math.sqrt(norm)
+        for r in results:
+            finals.append(r / norm)
+        return finals
 
     @classmethod
     def _is_correct(cls, state_vector, i, bit, n_qubit):
@@ -150,7 +154,7 @@ class AAELoadingMethod(LoadingMethod):
 
 
 class PostSelectJobFuture:
-    def __init__(self, execute, qc: QiskitCircuit, n: int, post_select: {}, n_shot: int):
+    def __init__(self, execute, qc: Gates, n: int, post_select: {}, n_shot: int):
         self.n_shot = n_shot
         self.execute = execute
         self.qc = qc

@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="aae",
-    version="0.0.3",
+    version="0.0.4",
     author="kouhei nakaji",
     author_email="kohei.nakaji@keio.jp",
     description="Tool for approximately loading coefficients",
@@ -76,7 +76,8 @@ setuptools.setup(
         "sympy==1.7.1",
         "threadpoolctl==2.1.0",
         "urllib3==1.26.3",
-        "websockets==8.1"
+        "websockets==8.1",
+        "qwrapper==0.0.6 @ git+ssh://git@github.com/konakaji/qwrapper.git"
     ],
     python_requires='>=3.7',
 )
