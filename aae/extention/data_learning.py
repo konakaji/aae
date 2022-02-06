@@ -2,7 +2,7 @@ from aae.core.encoder import Encoder
 from aae.core.sampler import ParametrizedDefaultSamplerFactory, QISKIT, QULACS
 from aae.extention.base import TrainingMethod
 from ibmq.allocator import NaiveQubitAllocator
-from qwrapper.circuit import QuantumCircuit
+from qwrapper.circuit import QWrapper as QuantumCircuit
 from aae.extention.context import Context
 
 ENERGY_KEY = "final-energy"
@@ -19,13 +19,14 @@ class DataLearning:
         else:
             self.factory = factory
         self.sampler = None
+        self.type = type
         self.final_cost = None
         self.task_watcher = None
         self.training_method = None
         self.load_method = None
 
     def load(self, filename, device=None, allocator=None, reservation=False):
-        self.sampler = self.factory.load(filename)
+        self.sampler = self.factory.load(filename, self.type)
         self.load_method = Context.get(self.factory.get_extra(filename)[NAME_KEY])
         if device is not None:
             from ibmq.base import DeviceFactory
@@ -38,7 +39,7 @@ class DataLearning:
 
     def learn(self, coefficients: [float], device=None,
               reservation=False, allocator=None, training_method: TrainingMethod = None):
-        data_sampler = self._get_data_sampler(training_method.real)
+        data_sampler = self._get_data_sampler(training_method)
         self._set_device(data_sampler, allocator, device, reservation)
         data_sampler.encoder = Encoder(self.n)
         optimization = training_method.build(data_sampler, coefficients, self.n, self.factory)
@@ -64,10 +65,10 @@ class DataLearning:
     def save_cost_transition(self, path):
         self.training_method.task_watcher.save_energy(path)
 
-    def _get_data_sampler(self, real):
+    def _get_data_sampler(self, method):
         if self.sampler is None:
-            if real:
-                data_sampler = self.factory.generate_real_he()
+            if method.real:
+                data_sampler = self.factory.generate_real_he(method.idblock)
             else:
                 data_sampler = self.factory.generate_he()
         else:

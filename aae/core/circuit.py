@@ -1,4 +1,5 @@
 import qiskit, random, math
+from abc import abstractmethod, ABC
 from aae.core.exception import *
 from qwrapper.circuit import QWrapper as QuantumCircuit, QiskitCircuit, QulacsCircuit
 
@@ -48,7 +49,7 @@ class AllHadamardGates(Gates):
         return circuit
 
 
-class RandomGates(Gates):
+class RandomGates(Gates, ABC):
     def __init__(self, parameters, directions, n_qubit, opposite_ladder=False):
         super().__init__(n_qubit)
         self.parameters = parameters
@@ -58,33 +59,40 @@ class RandomGates(Gates):
         self.draw_mode = False
         self.parameter_name = "\\theta"
 
+    @abstractmethod
+    def key(self):
+        pass
+
     def copy(self, parameters):
         self.parameters = parameters
 
     def merge(self, circuit: QuantumCircuit):
         for i, parameter in enumerate(self.parameters):
+            layer = int(i / self.n_qubit)
             if self.opposite_ladder:
                 target_qubit = self.n_qubit - i % self.n_qubit - 1
                 if target_qubit == self.n_qubit - 1:
-                    self.add_ladder_for_odd(circuit)
-                    self.add_ladder_for_even(circuit)
+                    self.add_ladder_for_odd(circuit, layer)
+                    self.add_ladder_for_even(circuit, layer)
                     circuit.barrier()
                 self._single_gate(self.directions[i], parameter, target_qubit, circuit, i)
             else:
                 target_qubit = i % self.n_qubit
                 self._single_gate(self.directions[i], parameter, target_qubit, circuit, i)
                 if target_qubit == self.n_qubit - 1:
-                    self.add_ladder_for_even(circuit)
-                    self.add_ladder_for_odd(circuit)
+                    self.add_ladder_for_even(circuit, layer)
+                    self.add_ladder_for_odd(circuit, layer)
                     circuit.barrier()
         if self.additional_circuit is not None:
             circuit = self.additional_circuit.merge(circuit)
         return circuit
 
-    def add_ladder_for_odd(self, circuit: QuantumCircuit):
+    @abstractmethod
+    def add_ladder_for_odd(self, circuit: QuantumCircuit, layer_index):
         pass
 
-    def add_ladder_for_even(self, circuit: QuantumCircuit):
+    @abstractmethod
+    def add_ladder_for_even(self, circuit: QuantumCircuit, layer_index):
         pass
 
     def is_single_rotation_target(self, target_qubit):
@@ -117,17 +125,20 @@ class HECircuit(RandomGates):
     def __init__(self, parameters, directions, n_qubit, opposite_ladder=False):
         super().__init__(parameters, directions, n_qubit, opposite_ladder)
 
-    def add_ladder_for_odd(self, circuit: QuantumCircuit):
+    def add_ladder_for_odd(self, circuit: QuantumCircuit, layer_index):
         j = 0
         while 2 * j + 1 < self.n_qubit - 1:
             circuit.cx(2 * j + 1, 2 * j + 2)
             j = j + 1
 
-    def add_ladder_for_even(self, circuit: QuantumCircuit):
+    def add_ladder_for_even(self, circuit: QuantumCircuit, layer_index):
         j = 0
         while 2 * j < self.n_qubit - 1:
             circuit.cx(2 * j, 2 * j + 1)
             j = j + 1
+
+    def key(self):
+        return "he"
 
     def dagger(self):
         parameters = []
@@ -140,6 +151,39 @@ class HECircuit(RandomGates):
         return HECircuit(parameters, directions, self.n_qubit, True)
 
 
+class IDBlockCircuit(HECircuit):
+    def __init__(self, parameters, directions, n_qubit, opposite_ladder=False):
+        super().__init__(parameters, directions, n_qubit, opposite_ladder)
+        layer_count = int(len(parameters) / n_qubit)
+        if layer_count % 2 != 1:
+            raise IllegalArgumentException("layer count must be odd")
+
+    def add_ladder_for_odd(self, circuit: QuantumCircuit, layer_index):
+        hlc = self._half_layer_count()
+        lc = self._layer_count()
+        if layer_index < hlc:
+            super().add_ladder_for_odd(circuit, layer_index)
+        elif layer_index < lc - 1:
+            super().add_ladder_for_even(circuit, layer_index)
+
+    def add_ladder_for_even(self, circuit: QuantumCircuit, layer_index):
+        hlc = self._half_layer_count()
+        lc = self._layer_count()
+        if layer_index < hlc:
+            super().add_ladder_for_even(circuit, layer_index)
+        elif layer_index < lc - 1:
+            super().add_ladder_for_odd(circuit, layer_index)
+
+    def key(self):
+        return "idblock"
+
+    def _half_layer_count(self):
+        return int(len(self.parameters) / (2 * self.n_qubit))
+
+    def _layer_count(self):
+        return len(self.parameters) / self.n_qubit
+
+
 class TENCircuit(RandomGates):
     def __init__(self, parameters, directions, n_qubit, n_a, n_b, opposite_ladder=False):
         super().__init__(parameters, directions, n_qubit, opposite_ladder)
@@ -147,7 +191,7 @@ class TENCircuit(RandomGates):
         self.n_b = n_b
         self.another_parameter_name = "\\theta"
 
-    def add_ladder_for_odd(self, circuit: QuantumCircuit):
+    def add_ladder_for_odd(self, circuit: QuantumCircuit, layer_index):
         offset = self.n_qubit - self.n_a - self.n_b
         j = math.ceil((offset - 1) / 2)
         while 2 * j + 1 < self.n_qubit - 1:
@@ -157,7 +201,7 @@ class TENCircuit(RandomGates):
             circuit.cx(2 * j + 1, 2 * j + 2)
             j = j + 1
 
-    def add_ladder_for_even(self, circuit: QuantumCircuit):
+    def add_ladder_for_even(self, circuit: QuantumCircuit, layer_index):
         offset = self.n_qubit - self.n_a - self.n_b
         j = math.ceil(offset / 2)
         while 2 * j < self.n_qubit - 1:
@@ -166,6 +210,9 @@ class TENCircuit(RandomGates):
                 continue
             circuit.cx(2 * j, 2 * j + 1)
             j = j + 1
+
+    def key(self):
+        return "ten"
 
     def is_single_rotation_target(self, target_qubit):
         return target_qubit >= self.n_qubit - self.n_a - self.n_b
@@ -259,11 +306,38 @@ class HECircuitFactory:
         return cls.do_generate(parameters, directions, n_qubit)
 
     @classmethod
+    def generate_real_idblock(cls, layer_count, n_qubit):
+        if layer_count % 2 != 1:
+            raise IllegalArgumentException("Layer count must be a factor of two.")
+        parameters = []
+        directions = []
+        half_l_count = int(layer_count / 2)
+        for l_index in range(half_l_count):
+            for j in range(n_qubit):
+                parameters.append(random.uniform(0, math.pi * 2))
+                directions.append(1)
+        for q in range(n_qubit):
+            parameters.append(0)
+            directions.append(1)
+        for anti_l_index in range(half_l_count):
+            l_index = half_l_count - anti_l_index - 1
+            for j in range(n_qubit):
+                parameters.append(-parameters[l_index * n_qubit + j])
+                directions.append(1)
+        return IDBlockCircuit(parameters, directions, n_qubit)
+
+    @classmethod
     def do_generate(cls, parameters, directions, n_qubit):
         return HECircuit(parameters, directions, n_qubit)
 
     @classmethod
+    def do_generate_idblock(cls, parameters, directions, n_qubit):
+        return IDBlockCircuit(parameters, directions, n_qubit)
+
+    @classmethod
     def override(cls, circuit: HECircuit, parameters):
+        if isinstance(circuit, IDBlockCircuit):
+            return IDBlockCircuit(parameters, circuit.directions, circuit.n_qubit)
         return HECircuit(parameters, circuit.directions, circuit.n_qubit)
 
 

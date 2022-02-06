@@ -7,6 +7,7 @@ class TrainingMethod(ABC):
     def __init__(self):
         self.task_watcher = None
         self.real = True
+        self.idblock = False
 
     @abstractmethod
     def build(self, data_sampler, coefficients, n_qubit, factory) -> GradientOptimizationTask:

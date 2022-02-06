@@ -84,6 +84,8 @@ class DefaultSampler(Sampler):
 
     def get_state_vector(self):
         qc = self._build_circuit()
+        for k, v in self.post_select.items():
+            qc.post_select(k, v)
         return qc.get_state_vector()
 
     def add_post_select(self, qubit_index, qubit_value):
@@ -149,8 +151,11 @@ class ParametrizedDefaultSamplerFactory:
         circuit = HECircuitFactory.generate(self.layer_count, self.n_qubit)
         return self._create_instance(circuit)
 
-    def generate_real_he(self):
-        circuit = HECircuitFactory.generate_real(self.layer_count, self.n_qubit)
+    def generate_real_he(self, idblock=False):
+        if idblock:
+            circuit = HECircuitFactory.generate_real_idblock(self.layer_count, self.n_qubit)
+        else:
+            circuit = HECircuitFactory.generate_real(self.layer_count, self.n_qubit)
         return self._create_instance(circuit)
 
     def generate_ten(self, n_a, n_b):
@@ -167,18 +172,22 @@ class ParametrizedDefaultSamplerFactory:
             result = {"name": sampler.name(),
                       "directions": directions,
                       "parameters": parameters,
+                      "circuit": sampler.circuit.key(),
                       "extra": extra,
                       "n_qubit": self.n_qubit}
             f.write(json.dumps(result, indent=2))
 
-    def load(self, filename):
+    def load(self, filename, type):
         with open(filename) as f:
             map = json.loads(f.read())
             directions = map["directions"]
             parameters = map["parameters"]
             n_qubit = map["n_qubit"]
-            type = map["type"]
-            circuit = HECircuitFactory.do_generate(parameters, directions, n_qubit)
+            c_key = map["circuit"]
+            if c_key == "idblock":
+                circuit = HECircuitFactory.do_generate_idblock(parameters, directions, n_qubit)
+            else:
+                circuit = HECircuitFactory.do_generate(parameters, directions, n_qubit)
             return self._create_instance(circuit, type)
 
     def get_extra(self, filename):

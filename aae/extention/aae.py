@@ -8,7 +8,7 @@ from aae.core.sampler import *
 from aae.core.task import GradientOptimizationTask
 from aae.core.monitor import ImageGenrator, TaskWatcher
 from aae.extention.base import TrainingMethod, LoadingMethod
-from qiskit import QuantumRegister, QuantumCircuit
+from qwrapper.circuit import QWrapper as QuantumCircuit
 
 Z_BASIS_FIGURE_PATH = "output/figure"
 X_BASIS_FIGURE_PATH = "output/figure_second"
@@ -19,8 +19,9 @@ POSITIVE_AAE_KEY = "POSITIVE_AAE"
 
 class AAETrainingMethodBase(TrainingMethod):
     def __init__(self, z_basis_image_path=None, x_basis_image_path=None,
-                 n_shot=400, variance=0.25, iteration=200, lr=0.1, lr_scheduler=None):
+                 n_shot=400, variance=0.25, iteration=200, lr=0.1, lr_scheduler=None, idblock=False):
         super().__init__()
+        self.idblock = idblock
         self.variance = variance
         self.n_shot = n_shot
         self.iteration = iteration
@@ -109,17 +110,20 @@ class AAETrainingMethod(AAETrainingMethodBase):
 
 class AAELoadingMethod(LoadingMethod):
     def add_data_gates(self, sampler, q_circuit: QuantumCircuit):
-        c = sampler.circuit.merge(q_circuit)
-        return Hadamard(0).merge(c)
+        sampler.circuit.merge(q_circuit)
+        sampler.circuit.additional_circuit = Hadamard(0)
 
     def get_state_vector(self, sampler):
         sampler.circuit.additional_circuit = Hadamard(0)
         sampler.post_select = {0: 1}
-        v = sampler.get_state_vector()
-        sampler.post_select = {}
-        sampler.circuit.additional_circuit = None
-        v = self._post_select(v, sampler.n_qubit - 1, 1, sampler.n_qubit)
-        return v
+        result = []
+        encoder = Encoder(sampler.n_qubit)
+        for j, v in enumerate(sampler.get_state_vector()):
+            array = encoder.encode(j)
+            if array[sampler.n_qubit - 1] == 0:
+                continue
+            result.append(v)
+        return result
 
     @classmethod
     def _post_select(cls, state_vector, i, bit, n_qubit):
@@ -138,7 +142,7 @@ class AAELoadingMethod(LoadingMethod):
             results.append(amplitude)
             norm = norm + amplitude * amplitude.conjugate()
         finals = []
-        norm = math.sqrt(norm)
+        norm = math.sqrt(abs(norm))
         for r in results:
             finals.append(r / norm)
         return finals

@@ -1,5 +1,6 @@
 import math
-import qiskit
+import qiskit, qulacs
+from qwrapper.circuit import QulacsCircuit, QiskitCircuit
 from aae.extention.data_learning import DataLearning
 from aae.extention.aae import AAETrainingMethod, PositiveAAETrainingMethod, AAEUtil
 
@@ -9,27 +10,30 @@ N_SHOT = 200
 
 def load():
     print("----load----")
-    data_learning = DataLearning(n_qubit=3, layer=4)
+    data_learning = DataLearning(n_qubit=3, layer=5, type="qulacs")
     data_learning.load("demo.model")
-    qr = qiskit.QuantumRegister(3)
-    cr = qiskit.ClassicalRegister(3)
-    qc = qiskit.QuantumCircuit(qr, cr)
-    data_learning.add_data_gates(qc, qr)
+    print(data_learning.get_state_vector())
+
+    data_learning = DataLearning(n_qubit=3, layer=5, type="qiskit")
+    data_learning.load("demo.model")
+    print(data_learning.get_state_vector())
     # add gates for quantum algorithm-------
     # qc.xxx()
     # ---------------------------------------
-    qc.measure(1, 1)
-    qc.measure(2, 2)
-    simulator = qiskit.Aer.get_backend("qasm_simulator")
-    future = AAEUtil.execute_with_post_selection(qc, simulator, shots=N_SHOT, n=3)
-    samples = future.get()
+    qc = QulacsCircuit(3)
+    data_learning.add_data_gates(qc)
+    qc.post_select(0, 1)
+    samples = qc.get_state_vector()
+    print(samples)
 
 
 def learn():
     print("----learn----")
-    data_learning = DataLearning(n_qubit=3, layer=4, type="qulacs")
-    training_method = AAETrainingMethod(iteration=20)
-    result = data_learning.learn([0, 0, 1, 0], training_method=training_method)
+    data_learning = DataLearning(n_qubit=3, layer=5, type="qulacs")
+    training_method = AAETrainingMethod(iteration=20, idblock=True)
+    array = [0] * 4
+    array[2] = 1
+    data_learning.learn(array, training_method=training_method)
     print(data_learning.get_state_vector())
     data_learning.save_model("demo.model")
     data_learning.save_cost_transition("cost.txt")
@@ -66,7 +70,7 @@ def normalize(state_array):
 
 
 if __name__ == '__main__':
-    learn()
-    # load()
+    # learn()
+    load()
     # learn_positive()
     # load_positive()
