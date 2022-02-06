@@ -131,7 +131,7 @@ class ParametrizedDefaultSampler(Parametrized, DefaultSampler):
         return "ParametrizedQiskitSampler"
 
 
-class ParametrizedQiskitSamplerFactory:
+class ParametrizedDefaultSamplerFactory:
     def __init__(self, layer_count, n_qubit, type):
         self.layer_count = layer_count
         self.n_qubit = n_qubit

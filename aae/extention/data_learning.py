@@ -1,5 +1,5 @@
 from aae.core.encoder import Encoder
-from aae.core.sampler import ParametrizedQiskitSamplerFactory, QISKIT, QULACS
+from aae.core.sampler import ParametrizedDefaultSamplerFactory, QISKIT, QULACS
 from aae.extention.base import TrainingMethod
 from ibmq.allocator import NaiveQubitAllocator
 from qwrapper.circuit import QuantumCircuit
@@ -15,7 +15,7 @@ class DataLearning:
         self.n = n_qubit
         self.layer = layer
         if factory is None:
-            self.factory = ParametrizedQiskitSamplerFactory(self.layer, self.n, type)
+            self.factory = ParametrizedDefaultSamplerFactory(self.layer, self.n, type)
         else:
             self.factory = factory
         self.sampler = None

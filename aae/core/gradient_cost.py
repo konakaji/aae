@@ -1,5 +1,5 @@
 from aae.core.entity import Probability
-from aae.core.sampler import ParametrizedDefaultSampler, ParametrizedQiskitSamplerFactory, SamplerException
+from aae.core.sampler import ParametrizedDefaultSampler, ParametrizedDefaultSamplerFactory, SamplerException
 from aae.core.circuit import Gates
 from aae.core.encoder import Encoder
 from aae.core.entity import Sample
@@ -10,7 +10,7 @@ import numpy
 class GradientCost:
     @abstractmethod
     def sample_gradient(self, sampler: ParametrizedDefaultSampler,
-                        factory: ParametrizedQiskitSamplerFactory, n_shot):
+                        factory: ParametrizedDefaultSamplerFactory, n_shot):
         return []
 
 
@@ -27,11 +27,11 @@ class MMDGradientCost(GradientCost):
         self.max_retry = 5
 
     def sample_gradient(self, sampler: ParametrizedDefaultSampler,
-                        factory: ParametrizedQiskitSamplerFactory, n_shot):
+                        factory: ParametrizedDefaultSamplerFactory, n_shot):
         return self.do_sample_gradient(sampler, factory, n_shot, self.probability)
 
     def do_sample_gradient(self, sampler: ParametrizedDefaultSampler,
-                           factory: ParametrizedQiskitSamplerFactory, n_shot, probability: Probability, retry=0):
+                           factory: ParametrizedDefaultSamplerFactory, n_shot, probability: Probability, retry=0):
         if retry == self.max_retry:
             raise InvalidStateException("retry limit exceed")
         results = numpy.zeros((len(sampler.get_parameters())), float)
@@ -95,7 +95,7 @@ class MultipleMMDGradientCost(MMDGradientCost):
         super().__init__(probability, encoder)
 
     def sample_gradient(self, sampler: ParametrizedDefaultSampler,
-                        factory: ParametrizedQiskitSamplerFactory, n_shot):
+                        factory: ParametrizedDefaultSamplerFactory, n_shot):
         sampler.circuit.additional_circuit = None
         base_gradient = super().do_sample_gradient(sampler, factory, n_shot, self.probability)
         sampler.circuit.additional_circuit = self.another_circuit

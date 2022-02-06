@@ -1,5 +1,5 @@
 from aae.core.optimizer import Optimizer
-from aae.core.sampler import Parametrized, ParametrizedDefaultSampler, ParametrizedQiskitSamplerFactory
+from aae.core.sampler import Parametrized, ParametrizedDefaultSampler, ParametrizedDefaultSamplerFactory
 from aae.core.gradient_cost import GradientCost
 from aae.core.exact_cost import Cost
 from aae.core.monitor import TaskWatcher
@@ -32,7 +32,7 @@ class AdamOptimizationTask:
 
 class GradientOptimizationTask:
     def __init__(self, sampler: ParametrizedDefaultSampler,
-                 factory: ParametrizedQiskitSamplerFactory,
+                 factory: ParametrizedDefaultSamplerFactory,
                  cost: GradientCost, task_watcher: TaskWatcher, n_shot, optimizer: Optimizer):
         self.sampler = sampler
         self.factory = factory
