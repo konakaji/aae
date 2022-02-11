@@ -30,7 +30,7 @@ def load():
 def learn():
     print("----learn----")
     data_learning = DataLearning(n_qubit=3, layer=5, type="qulacs")
-    training_method = AAETrainingMethod(iteration=20, idblock=True)
+    training_method = AAETrainingMethod(iteration=4, idblock=True)
     array = [0] * 4
     array[2] = 1
     data_learning.learn(array, training_method=training_method)
@@ -70,7 +70,7 @@ def normalize(state_array):
 
 
 if __name__ == '__main__':
-    # learn()
-    load()
+    learn()
+    # load()
     # learn_positive()
     # load_positive()

@@ -3,9 +3,10 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+
 setuptools.setup(
     name="aae",
-    version="0.0.7",
+    version="0.0.8",
     author="kouhei nakaji",
     author_email="kohei.nakaji@keio.jp",
     description="Tool for approximately loading coefficients",

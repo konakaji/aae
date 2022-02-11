@@ -47,7 +47,8 @@ class DataLearning:
         self.sampler = data_sampler
         self.training_method = training_method
         self.load_method = Context.get(training_method.get_name())
-        return self.get_state_vector()
+        result = self.get_state_vector()
+        return result
 
     def add_data_gates(self, q_circuit: QuantumCircuit):
         return self.load_method.add_data_gates(self.sampler, q_circuit)

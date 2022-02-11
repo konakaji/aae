@@ -40,6 +40,7 @@ class GradientOptimizationTask:
         self.task_watcher = task_watcher
         self.n_shot = n_shot
         self.optimizer = optimizer
+        self.step = 0
         self.gradient_function = self.build_gradient_function()
 
     def build_gradient_function(self):
@@ -50,12 +51,13 @@ class GradientOptimizationTask:
         def function(parameters):
             sampler.copy(parameters)
             grad = self.cost.sample_gradient(sampler, factory, n_shot)
-            self.task_watcher.record(sampler)
+            if self.step > 0:
+                self.task_watcher.record(sampler)
+            self.step = self.step + 1
             return grad
 
         return function
 
     def optimize(self):
-        self.step = 0
         parameters = self.sampler.get_parameters()
         self.optimizer.do_optimize(self.gradient_function, parameters)

@@ -76,6 +76,7 @@ class AAETrainingMethodBase(TrainingMethod):
                                    [kl_cost, another_kl_cost, mmd_cost, another_mmd_cost])
 
         def total_cost(sampler):
+            sampler.circuit.additional_circuit = None
             z_basis = mmd_cost.value(sampler)
             x_basis = another_mmd_cost.value(sampler)
             return z_basis + x_basis
@@ -123,6 +124,8 @@ class AAELoadingMethod(LoadingMethod):
             if array[sampler.n_qubit - 1] == 0:
                 continue
             result.append(v)
+        sampler.circuit.additional_circuit = None
+        sampler.post_select = {}
         return result
 
     @classmethod
