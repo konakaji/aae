@@ -76,5 +76,5 @@ setuptools.setup(
         "websockets==8.1",
         "qwrapper @ git+https://github.com/konakaji/qwrapper.git#egg=qwrapper"
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.6',
 )
