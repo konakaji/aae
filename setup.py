@@ -68,7 +68,6 @@ setuptools.setup(
         "requests==2.25.1",
         "requests-ntlm==1.1.0",
         "scikit-learn==0.24.1",
-        "scipy==1.6.0",
         "six==1.15.0",
         "soupsieve==2.1",
         "sympy==1.7.1",
