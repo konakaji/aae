@@ -48,7 +48,6 @@ setuptools.setup(
         "networkx==2.5",
         "ntlm-auth==1.5.0",
         "numpy==1.19.1",
-        "pandas==1.2.1",
         "Pillow==8.1.0",
         "ply==3.11",
         "psutil==5.8.0",
