@@ -76,7 +76,7 @@ setuptools.setup(
         "threadpoolctl==2.1.0",
         "urllib3==1.26.3",
         "websockets==8.1",
-        "qwrapper @ git+ssh://git@github.com/konakaji/qwrapper.git#egg=repo-0.0.10"
+        "qwrapper @ git+ssh://git@github.com/konakaji/qwrapper.git#egg=repo-0.0.11"
     ],
     python_requires='>=3.7',
 )
