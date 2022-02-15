@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="aae",
-    version="0.0.10",
+    version="0.0.11",
     author="kouhei nakaji",
     author_email="kohei.nakaji@keio.jp",
     description="Tool for approximately loading coefficients",
