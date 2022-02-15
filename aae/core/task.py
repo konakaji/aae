@@ -11,7 +11,12 @@ class AdamOptimizationTask:
         self.sampler = sampler
         self.cost = cost
         self.optimizer = optimizer
-        self.task_watcher = task_watcher
+
+        def watch(parameters):
+            sampler.copy(parameters)
+            task_watcher.record(sampler)
+
+        self.optimizer.watch = watch
         self.function = self.build_function()
         self.iteration = 0
 
@@ -21,8 +26,6 @@ class AdamOptimizationTask:
         def function(parameters):
             sampler.copy(parameters)
             c = self.cost.value(sampler)
-            if self.iteration > 0:
-                self.task_watcher.record(sampler)
             self.iteration = self.iteration + 1
             return c
 

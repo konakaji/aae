@@ -68,7 +68,7 @@ class TransformingLRScheduler(LRScheduler):
 class AdamOptimizer(Optimizer):
     def __init__(self, scheduler=UnitLRScheduler(1e-3), maxiter=10000, tol=1e-10, beta_1=0.9, beta_2=0.99,
                  noise_factor=1e-8,
-                 eps=1e-10):
+                 eps=1e-10, watch=None):
         super(AdamOptimizer, self).__init__()
         self._maxiter = maxiter
         self.scheduler = scheduler
@@ -80,6 +80,7 @@ class AdamOptimizer(Optimizer):
         self._t = 0
         self._m = np.zeros(1)
         self._v = np.zeros(1)
+        self.watch = watch
 
     def do_optimize(self, gradient_function, init_args, func=None):
         params = np.array(init_args)
@@ -90,6 +91,8 @@ class AdamOptimizer(Optimizer):
         while self._t < self._maxiter:
             if func is not None:
                 print(self._t, func(params))
+            if self.watch is not None:
+                self.watch(params)
             derivative = gradient_function(params)
             self._t += 1
             self._m = self._beta1 * self._m + (1 - self._beta1) * derivative
