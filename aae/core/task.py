@@ -6,11 +6,12 @@ from aae.core.monitor import TaskWatcher
 
 
 class AdamOptimizationTask:
-    def __init__(self, sampler: Parametrized,
-                 cost: Cost, optimizer: Optimizer):
+    def __init__(self, sampler: ParametrizedDefaultSampler,
+                 cost: Cost, optimizer: Optimizer, task_watcher: TaskWatcher):
         self.sampler = sampler
         self.cost = cost
         self.optimizer = optimizer
+        self.task_watcher = task_watcher
         self.function = self.build_function()
         self.iteration = 0
 
@@ -20,6 +21,8 @@ class AdamOptimizationTask:
         def function(parameters):
             sampler.copy(parameters)
             c = self.cost.value(sampler)
+            if self.iteration > 0:
+                self.task_watcher.record(sampler)
             self.iteration = self.iteration + 1
             return c
 
