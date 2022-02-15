@@ -89,8 +89,6 @@ class AdamOptimizer(Optimizer):
         self._m = np.zeros(len(derivative))
         self._v = np.zeros(len(derivative))
         while self._t < self._maxiter:
-            if func is not None:
-                print(self._t, func(params))
             if self.watch is not None:
                 self.watch(params)
             derivative = gradient_function(params)
