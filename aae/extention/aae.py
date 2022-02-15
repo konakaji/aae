@@ -111,8 +111,10 @@ class AAETrainingMethod(AAETrainingMethodBase):
 
 class AAELoadingMethod(LoadingMethod):
     def add_data_gates(self, sampler, q_circuit: QuantumCircuit):
-        sampler.circuit.merge(q_circuit)
-        sampler.circuit.additional_circuit = Hadamard(0)
+        qc = sampler.circuit.merge(q_circuit)
+        qc = Hadamard(0).merge(qc)
+        qc.post_select(0, 1)
+        return qc
 
     def get_state_vector(self, sampler):
         sampler.circuit.additional_circuit = Hadamard(0)
