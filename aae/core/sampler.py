@@ -182,6 +182,8 @@ class ParametrizedDefaultSamplerFactory:
             map = json.loads(f.read())
             directions = map["directions"]
             parameters = map["parameters"]
+            layer_count = int(len(parameters)/self.n_qubit)
+            self.layer_count = layer_count
             n_qubit = map["n_qubit"]
             c_key = map["circuit"]
             if c_key == "idblock":

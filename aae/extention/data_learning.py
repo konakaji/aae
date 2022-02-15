@@ -11,7 +11,7 @@ NAME_KEY = "training-method"
 
 
 class DataLearning:
-    def __init__(self, n_qubit: int, layer: int, factory=None, type=QISKIT):
+    def __init__(self, n_qubit: int, layer: int = 0, factory=None, type=QISKIT):
         self.n = n_qubit
         self.layer = layer
         if factory is None:

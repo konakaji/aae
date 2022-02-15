@@ -70,7 +70,7 @@ def normalize(state_array):
 
 
 if __name__ == '__main__':
-    learn()
-    # load()
+    # learn()
+    load()
     # learn_positive()
     # load_positive()
