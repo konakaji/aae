@@ -1,6 +1,6 @@
 from aae.core.circuit import *
 from aae.core.entity import Coefficient
-from aae.core.exact_cost import KLCost, MMDCost
+from aae.core.exact_cost import KLCost, MMDCost, OverlapCost
 from aae.core.gradient_cost import *
 from aae.core.mapper import CoefficientMapper, CoefficientMapperPositive
 from aae.core.optimizer import *
@@ -9,6 +9,7 @@ from aae.core.task import GradientOptimizationTask
 from aae.core.monitor import ImageGenrator, TaskWatcher
 from aae.extention.base import TrainingMethod, LoadingMethod
 from qwrapper.circuit import QWrapper as QuantumCircuit
+import math
 
 Z_BASIS_FIGURE_PATH = "output/figure"
 X_BASIS_FIGURE_PATH = "output/figure_second"
@@ -40,7 +41,7 @@ class AAETrainingMethodBase(TrainingMethod):
         optimizer = AdamOptimizer(self.lr_scheduler, maxiter=self.iteration)
         converter = CircuitAppender(additional_circuit)
         probability, hadamard_probability = self.get_mapper(data_sampler, n).map(Coefficient(coefficients))
-        task, task_watcher, cost = self._build_task(probability, hadamard_probability, additional_circuit,
+        task, task_watcher, cost = self._build_task(coefficients, probability, hadamard_probability, additional_circuit,
                                                     converter, data_sampler, factory, optimizer)
         self.task_watcher = task_watcher
         self.cost = cost
@@ -55,7 +56,7 @@ class AAETrainingMethodBase(TrainingMethod):
     def get_mapper(self, data_sampler, n):
         pass
 
-    def _build_task(self, probability, another_probability, additional_circuit,
+    def _build_task(self, coefficients, probability, another_probability, additional_circuit,
                     converter, data_sampler, factory, optimizer):
         encoder = data_sampler.encoder
         mmd_gradient_cost = self._build_gradient_cost(probability, another_probability, additional_circuit,
@@ -73,7 +74,7 @@ class AAETrainingMethodBase(TrainingMethod):
                                 ImageGenrator(self.x_basis_image_path, another_probability,
                                               converter=converter)]
         task_watcher = TaskWatcher(image_generators,
-                                   [kl_cost, another_kl_cost, mmd_cost, another_mmd_cost])
+                                   [kl_cost, another_kl_cost, mmd_cost, another_mmd_cost, OverlapCost(coefficients)])
 
         def total_cost(sampler):
             sampler.circuit.additional_circuit = None

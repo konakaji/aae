@@ -1,8 +1,9 @@
 from aae.core.sampler import DefaultSampler, Converter
 from aae.core.entity import Probability
 from aae.core.encoder import Encoder
+from aae.core.circuit import Hadamard
 from abc import abstractmethod
-import math
+import math, numpy as np
 
 
 class Cost:
@@ -13,6 +14,28 @@ class Cost:
     @abstractmethod
     def name(self):
         return "None"
+
+
+class OverlapCost(Cost):
+    def __init__(self, coefficient):
+        self.coefficient = np.array(coefficient)
+
+    def value(self, sampler: DefaultSampler):
+        encoder = Encoder(sampler.n_qubit)
+        sampler.circuit.additional_circuit = Hadamard(0)
+        sampler.post_select = {0: 1}
+        result = []
+        for j, v in enumerate(sampler.get_state_vector()):
+            array = encoder.encode(j)
+            if array[sampler.n_qubit - 1] == 0:
+                continue
+            result.append(v)
+        sampler.circuit.additional_circuit = None
+        sampler.post_select = {}
+        return abs(np.array(result).dot(self.coefficient))
+
+    def name(self):
+        return "OverlapCost"
 
 
 class MMDCost(Cost):
