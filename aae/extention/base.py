@@ -34,7 +34,7 @@ class LoadingMethod(ABC):
 
 class DefaultLoadingMethod(LoadingMethod):
     def add_data_gates(self, sampler, q_circuit: QuantumCircuit):
-        c, q_register = sampler.circuit.merge(q_circuit)
+        c = sampler.circuit.merge(q_circuit)
         return c
 
     def get_state_vector(self, sampler):
